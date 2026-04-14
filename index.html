@@ -1,0 +1,3094 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI MAFIA - The Ultimate AI Showdown</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blood-red: #8b0000;
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --dark-bg: #0a0806;
+      --dark-card: #12100e;
+      --stone: #1a1714;
+      --text-light: #e8d5b0;
+      --text-muted: #7a6a50;
+      --mafia-red: #cc2200;
+      --sheriff-gold: #d4a017;
+      --town-green: #2a7a3a;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Crimson Pro', serif;
+      background: var(--dark-bg);
+      color: var(--text-light);
+      overflow-x: hidden;
+    }
+    #loading-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: opacity 0.8s ease;
+      gap: 0;
+    }
+    #loading-screen .load-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2rem, 6vw, 4rem);
+      color: var(--blood-red);
+      text-shadow: 0 0 40px rgba(139,0,0,0.8);
+      letter-spacing: 0.3em;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    #loading-screen .load-sub {
+      font-family: 'Crimson Pro', serif;
+      color: var(--gold);
+      margin-top: 0.6rem;
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      opacity: 0.8;
+    }
+    /* Step description - what's currently loading */
+    #loading-step {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+      min-height: 1.2em;
+      letter-spacing: 0.05em;
+      transition: opacity 0.3s ease;
+    }
+    /* Bar container */
+    #loading-bar-wrap {
+      width: min(400px, 80vw);
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      margin-top: 1.8rem;
+      overflow: hidden;
+      position: relative;
+    }
+    #loading-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blood-red), var(--gold));
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 3px;
+      box-shadow: 0 0 10px rgba(201,168,76,0.5);
+    }
+    /* Shimmer effect on bar */
+    #loading-bar::after {
+      content: '';
+      position: absolute; top: 0; left: -60px;
+      width: 60px; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(500px); }
+    }
+    /* Percentage counter */
+    #loading-pct {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      color: var(--gold);
+      margin-top: 0.6rem;
+      letter-spacing: 0.2em;
+      opacity: 0.7;
+    }
+    /* Mini checklist of steps */
+    #loading-steps-list {
+      margin-top: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      width: min(320px, 80vw);
+    }
+    .load-step-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.25);
+      transition: color 0.4s ease;
+    }
+    .load-step-item.done { color: rgba(201,168,76,0.8); }
+    .load-step-item.active { color: rgba(255,255,255,0.85); animation: stepPulse 0.8s ease-in-out infinite alternate; }
+    .load-step-icon { font-size: 0.75rem; width: 1rem; text-align: center; }
+    @keyframes stepPulse {
+      from { opacity: 0.7; } to { opacity: 1; }
+    }
+    /* Click-to-enter prompt — shown when loading finishes */
+    #click-to-enter {
+      display: none;
+      margin-top: 2rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      animation: cte-pulse 1.4s ease-in-out infinite;
+    }
+    #click-to-enter.show { display: flex; }
+    #click-to-enter .cte-icon {
+      font-size: 1.6rem;
+      filter: drop-shadow(0 0 12px rgba(201,168,76,0.7));
+    }
+    #click-to-enter .cte-text {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.24em;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(201,168,76,0.5);
+    }
+    @keyframes cte-pulse {
+      0%,100% { opacity: 0.65; transform: scale(1); }
+      50%      { opacity: 1;    transform: scale(1.05); }
+    }
+    @keyframes pulse {
+      0%,100% { text-shadow: 0 0 40px rgba(139,0,0,0.8); }
+      50% { text-shadow: 0 0 80px rgba(139,0,0,1), 0 0 120px rgba(200,0,0,0.5); }
+    }
+    #canvas-container {
+      position: fixed; inset: 0; z-index: 0;
+    }
+    #canvas-container canvas { display: block; width: 100% !important; height: 100% !important; }
+
+    /* ── LOBBY ── */
+    #lobby {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    #lobby-overlay {
+      position: fixed; inset: 0; z-index: 5;
+      background: linear-gradient(to bottom,
+        rgba(0,0,0,0.6) 0%,
+        rgba(10,8,6,0.4) 40%,
+        rgba(10,8,6,0.85) 100%);
+      pointer-events: none;
+    }
+    .lobby-hero {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(3rem, 10vw, 8rem);
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: #fff;
+      text-shadow: 0 0 30px var(--blood-red), 0 0 60px rgba(139,0,0,0.5), 0 0 120px rgba(139,0,0,0.3);
+      text-align: center;
+      line-height: 1;
+      animation: titleGlow 3s ease-in-out infinite;
+    }
+    @keyframes titleGlow {
+      0%,100% { text-shadow: 0 0 30px var(--blood-red), 0 0 60px rgba(139,0,0,0.5); }
+      50% { text-shadow: 0 0 50px #ff2200, 0 0 100px rgba(200,0,0,0.7), 0 0 150px rgba(139,0,0,0.4); }
+    }
+    .hero-sub {
+      font-family: 'Crimson Pro', serif;
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: var(--gold);
+      letter-spacing: 0.3em;
+      margin-top: 0.5rem;
+      text-align: center;
+      opacity: 0.9;
+    }
+    .hero-tagline {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      font-size: clamp(0.9rem, 2vw, 1.2rem);
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+    .scroll-hint {
+      position: absolute; bottom: 2rem;
+      left: 50%; transform: translateX(-50%);
+      color: var(--gold);
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      animation: bounce 2s ease-in-out infinite;
+      font-family: 'Cinzel', serif;
+    }
+    @keyframes bounce {
+      0%,100%{transform:translateX(-50%) translateY(0)}
+      50%{transform:translateX(-50%) translateY(8px)}
+    }
+
+    /* ── FORM SECTION ── */
+    .form-section {
+      position: relative; z-index: 10;
+      display: flex; justify-content: center;
+      padding: 4rem 1rem;
+    }
+    .form-card {
+      background: linear-gradient(135deg, rgba(26,23,20,0.97) 0%, rgba(18,16,14,0.98) 100%);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 8px;
+      padding: 3rem;
+      width: 100%; max-width: 680px;
+      box-shadow: 0 0 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(201,168,76,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .form-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='none'/%3E%3Cpath d='M0 0h1v1H0z M20 20h1v1H0z' fill='rgba(201,168,76,0.03)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .form-card-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.1em;
+    }
+    .form-card-sub {
+      font-family: 'Crimson Pro', serif;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 4px;
+      color: var(--text-light);
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(201,168,76,0.1);
+    }
+    .form-group input.error { border-color: var(--mafia-red); }
+    .form-group input.success { border-color: var(--town-green); }
+    .form-group select option { background: #1a1714; color: var(--text-light); }
+    .key-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      font-family: 'Crimson Pro', serif;
+    }
+
+    /* Tier cards */
+    .tier-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .tier-card {
+      border: 2px solid rgba(201,168,76,0.15);
+      border-radius: 6px;
+      padding: 1rem 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(0,0,0,0.3);
+    }
+    .tier-card:hover { border-color: rgba(201,168,76,0.5); background: rgba(201,168,76,0.05); }
+    .tier-card.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+    .tier-card .tier-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+    .tier-card .tier-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+    }
+    .tier-card .tier-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .api-error-banner {
+      display: none;
+      background: rgba(139,0,0,0.2);
+      border: 1px solid var(--blood-red);
+      border-radius: 4px;
+      padding: 1rem;
+      color: #ff8080;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .api-error-banner.visible { display: block; }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--blood-red) 0%, #600000 100%);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      padding: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #a00000 0%, #700000 100%);
+      box-shadow: 0 0 30px rgba(139,0,0,0.5);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5; cursor: not-allowed;
+      transform: none; box-shadow: none;
+    }
+    .btn-primary .btn-spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .btn-primary.loading .btn-spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── HOW TO PLAY ── */
+    .info-section {
+      position: relative; z-index: 10;
+      padding: 4rem 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.15em;
+    }
+    .section-sub {
+      font-family: 'Crimson Pro', serif;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 3rem;
+      font-size: 1.1rem;
+    }
+    .step-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .step-card {
+      background: rgba(26,23,20,0.8);
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 6px;
+      padding: 1.5rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .step-card.visible { opacity: 1; transform: translateY(0); }
+    .step-num {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: var(--blood-red);
+      font-weight: 900;
+    }
+    .step-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      color: var(--gold);
+      margin: 0.5rem 0;
+      letter-spacing: 0.1em;
+    }
+    .step-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── ROLE CARDS ── */
+    .role-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .role-card {
+      perspective: 1000px;
+      height: 220px;
+      cursor: pointer;
+    }
+    .role-card-inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.7s ease;
+    }
+    .role-card:hover .role-card-inner { transform: rotateY(180deg); }
+    .role-front, .role-back {
+      position: absolute; inset: 0;
+      backface-visibility: hidden;
+      border-radius: 6px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 1.5rem;
+      border: 1px solid rgba(201,168,76,0.2);
+    }
+    .role-front { background: rgba(18,16,14,0.95); }
+    .role-back { background: rgba(26,23,20,0.98); transform: rotateY(180deg); }
+    .role-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .role-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+    }
+    .role-back p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      position: relative; z-index: 10;
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(201,168,76,0.1);
+    }
+    .footer a { color: var(--gold); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ── GAME UI ── */
+    #game-ui {
+      display: none;
+      position: fixed; inset: 0; z-index: 20;
+      pointer-events: none;
+    }
+    #game-ui.active { display: block; }
+
+    /* Top HUD */
+    #top-hud {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 56px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+      display: flex; align-items: center;
+      padding: 0 1rem;
+      gap: 1rem;
+      pointer-events: all;
+    }
+    #phase-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      color: var(--gold);
+    }
+    #role-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      color: var(--text-light);
+    }
+    #token-counter {
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+    #hud-btns { display: flex; gap: 0.5rem; }
+    .hud-btn {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(201,168,76,0.2);
+      color: var(--text-light);
+      padding: 0.3rem 0.7rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Crimson Pro', serif;
+    }
+    .hud-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+
+    /* Chat log */
+    /* Chat log — now a popup panel toggled by the 💬 button */
+    #chat-log-popup {
+      position: fixed; bottom: 60px; left: 1rem;
+      width: 320px; max-height: 320px;
+      background: rgba(5,5,12,0.96);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 10px;
+      overflow-y: auto;
+      padding: 0.75rem;
+      pointer-events: all;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(201,168,76,0.3) transparent;
+      display: none;
+      z-index: 110;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    #chat-log-popup.open { display: block; }
+    #chat-log-popup::-webkit-scrollbar { width: 4px; }
+    #chat-log-popup::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }
+    #chat-log-popup-header {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+      padding-bottom: 0.4rem;
+    }
+    /* Hidden original chat-log — still used by HUD.js addChat() */
+    #chat-log { display: none; }
+
+    /* Live Activity Feed — replaces chat log in bottom-left */
+    #activity-feed { display:none !important; }
+
+
+
+
+
+    @keyframes actFadeIn {
+      from { opacity:0; transform:translateX(-12px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+    .chat-msg {
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 0.5rem;
+    }
+    .chat-msg:last-child { border-bottom: none; margin-bottom: 0; }
+    .chat-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      color: var(--gold);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    .chat-text { color: var(--text-light); }
+
+    /* ── Rich player list ───────────────────────────────────────────── */
+    #player-list {
+      position: fixed; top: 50%; right: 12px;
+      transform: translateY(-50%);
+      width: 210px;
+      background: rgba(4,4,14,0.93);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 12px;
+      padding: 8px 6px;
+      pointer-events: all;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      max-height: 88vh;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    #player-list::-webkit-scrollbar { display: none; }
+    #player-list-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      margin-bottom: 6px;
+      text-align: center;
+      opacity: 0.7;
+      text-transform: uppercase;
+    }
+    .player-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 6px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      margin-bottom: 2px;
+      border: 1px solid transparent;
+    }
+    .player-item.speaking {
+      background: rgba(201,168,76,0.1);
+      border-color: rgba(201,168,76,0.35);
+    }
+    .player-item.dead {
+      opacity: 0.35;
+      filter: grayscale(0.8);
+    }
+    /* Logo wrapper */
+    .pli-logo-wrap {
+      width: 40px; height: 40px; flex-shrink: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .pli-logo-img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      padding: 4px;
+    }
+    .pli-logo-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: auto;
+    }
+    .pli-logo-fb {
+      font-size: 14px; font-weight: 800;
+      color: #fff;
+      font-family: 'Cinzel', serif;
+    }
+    /* Info column */
+    .pli-info { flex: 1; min-width: 0; }
+    .pli-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #e5e7eb;
+    }
+    .pli-role-badge {
+      display: inline-block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.5rem;
+      letter-spacing: 0.08em;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-top: 2px;
+      font-weight: 700;
+    }
+    /* Status dot */
+    .pli-status-dot {
+      width: 8px; height: 8px; flex-shrink: 0;
+      border-radius: 50%;
+    }
+    .pli-status-dot.alive {
+      background: #4ade80;
+      box-shadow: 0 0 5px #4ade80;
+      animation: pliPulse 2s infinite;
+    }
+    .pli-status-dot.dead { font-size: 0.7rem; width: auto; height: auto; }
+    @keyframes pliPulse {
+      0%,100% { opacity:1; } 50% { opacity:0.4; }
+    }
+
+    /* Speaking turn input */
+    #speak-input-panel {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: min(600px, calc(100% - 2rem));
+      background: rgba(0,0,0,0.9);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 1rem;
+      pointer-events: all;
+      z-index: 60;
+      transform: translateX(-50%) translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #speak-input-panel.visible { transform: translateX(-50%) translateY(0); }
+    #speak-input-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    #speak-input-row { display: flex; gap: 0.5rem; }
+    #speak-input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 4px;
+      color: var(--text-light);
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem;
+      padding: 0.6rem 1rem;
+      outline: none;
+    }
+    #speak-input:focus { border-color: var(--gold); }
+    .speak-btn {
+      background: var(--blood-red);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .speak-btn:hover { background: #a00000; }
+    .speak-btn.secondary { background: transparent; border-color: rgba(201,168,76,0.2); color: var(--text-muted); }
+    .speak-btn.secondary:hover { background: rgba(255,255,255,0.05); }
+
+    /* Timer ring overlay */
+    #timer-overlay {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex; flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #timer-overlay.visible { opacity: 1; }
+    #timer-canvas { display: block; }
+    #timer-speaker-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+
+    /* Vote panel */
+    #vote-panel {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.92);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 8px;
+      padding: 2rem;
+      width: min(600px, calc(100% - 2rem));
+      display: none;
+      pointer-events: all;
+      z-index: 140;
+    }
+    #vote-panel.visible { display: block; }
+    #vote-panel-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 1rem;
+      letter-spacing: 0.1em;
+    }
+    .vote-targets {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.75rem;
+    }
+    .vote-target-btn {
+      appearance: none;
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(201,168,76,0.15);
+      border-radius: 6px;
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-light);
+      font-family: 'Crimson Pro', serif;
+      width: 100%;
+    }
+    .vote-target-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+    .vote-target-btn.selected {
+      border-color: var(--gold) !important;
+      background: rgba(201,168,76,0.18) !important;
+      box-shadow: 0 0 0 2px rgba(201,168,76,0.5), 0 0 16px rgba(201,168,76,0.3);
+      transform: scale(1.04);
+    }
+    .vote-target-btn.selected .vtb-name { color: var(--gold); font-weight: 700; }
+    .vote-target-btn .vtb-face {
+      width: 44px; height: 44px;
+      border-radius: 4px;
+      margin: 0 auto 0.5rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .vote-target-btn .vtb-face-canvas {
+      width: 44px; height: 44px;
+      border-radius: 6px;
+      margin: 0 auto 0.5rem;
+      display: block;
+      image-rendering: pixelated;
+    }
+    .vote-target-btn .vtb-name { font-size: 0.8rem; }
+    .vote-tally {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      min-height: 40px;
+      font-family: 'Crimson Pro', serif;
+      text-align: center;
+    }
+
+    /* Night panel */
+    #night-panel {
+      position: fixed;
+      bottom: 1.2rem; right: 1.2rem;
+      background: rgba(8,5,18,0.97);
+      border: 1px solid rgba(120,90,200,0.5);
+      border-radius: 12px;
+      padding: 0;
+      width: min(520px, calc(100% - 2.4rem));
+      max-height: 90vh;
+      overflow: hidden;
+      display: none;
+      pointer-events: all;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(120,90,200,0.2);
+      transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+      z-index: 150;
+    }
+    #night-panel.visible { display: flex; flex-direction: column; }
+    /* Minimized state — collapses to a small pill in bottom-right */
+    #night-panel.minimized {
+      width: auto !important;
+      max-width: 260px;
+      height: auto !important;
+    }
+    #night-panel.minimized #night-panel-body { display: none; }
+    #night-panel.minimized #night-panel-header {
+      padding: 0.55rem 1rem;
+      border-radius: 12px;
+    }
+    /* Header bar — always visible, click to minimise/expand */
+    #night-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem 1rem 0.6rem;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(120,90,200,0.15);
+      user-select: none;
+      flex-shrink: 0;
+    }
+    #night-panel-header:hover { background: rgba(120,90,200,0.06); }
+    #night-panel-body {
+      padding: 0 1.4rem 1.4rem;
+      overflow-y: auto;
+      max-height: calc(90vh - 60px);
+    }
+    #night-panel-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.88rem;
+      color: #c090ff;
+      letter-spacing: 0.08em;
+      margin: 0;
+    }
+    #night-panel-sub {
+      font-family: 'Crimson Pro', serif;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .night-targets { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; }
+    .night-action-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .night-action-btn {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(100,80,160,0.3);
+      border-radius: 6px;
+      padding: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-light);
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+    .night-action-btn:hover { border-color: #9060d0; background: rgba(100,80,160,0.1); }
+    .night-action-btn.selected { border-color: #9060d0; background: rgba(100,80,160,0.15); }
+    .night-warning { color: #ff8040; font-size: 0.8rem; margin-top: 0.3rem; font-family: 'Crimson Pro', serif; }
+
+    /* Full screen overlays */
+    #credit-overlay {
+      position: fixed; inset: 0; z-index: 9998;
+      background: rgba(0,0,0,0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+      pointer-events: all;
+    }
+    #credit-overlay.visible { display: flex; }
+    #credit-overlay h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      color: var(--mafia-red);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #credit-overlay p {
+      font-family: 'Crimson Pro', serif;
+      color: var(--text-light);
+      text-align: center;
+      max-width: 500px;
+      line-height: 1.7;
+      font-size: 1.1rem;
+    }
+    #credit-overlay a { color: var(--gold); text-decoration: none; font-weight: 600; }
+    #credit-overlay a:hover { text-decoration: underline; }
+    #credit-overlay .continue-btn {
+      margin-top: 1.5rem;
+      background: transparent;
+      border: 1px solid var(--blood-red);
+      color: var(--text-light);
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      padding: 0.6rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #game-over-overlay {
+      position: fixed; inset: 0; z-index: 9997;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+      pointer-events: all;
+    }
+    #game-over-overlay.visible { display: flex; }
+    #game-over-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #game-over-title.town { color: var(--town-green); text-shadow: 0 0 40px rgba(42,122,58,0.8); }
+    #game-over-title.mafia { color: var(--mafia-red); text-shadow: 0 0 40px rgba(200,34,0,0.8); }
+    #game-over-sub {
+      font-family: 'Crimson Pro', serif;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .game-over-btn {
+      background: var(--blood-red);
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      padding: 0.8rem 2rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .game-over-btn:hover { background: #a00000; transform: translateY(-2px); }
+
+    /* Speech bubble above character */
+    .speech-bubble-3d {
+      position: fixed;
+      top: 0; left: 0;
+      background: rgba(10,8,4,0.93);
+      border: 1px solid rgba(201,168,76,0.55);
+      border-radius: 10px;
+      padding: 0.6rem 0.9rem;
+      max-width: min(34vw, 300px);
+      min-width: 80px;
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.92rem;
+      color: var(--text-light);
+      pointer-events: none;
+      z-index: 200;
+      line-height: 1.5;
+      box-shadow: 0 4px 28px rgba(0,0,0,0.75), 0 0 0 1px rgba(0,0,0,0.4);
+      will-change: transform;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .speech-bubble-3d.speech-bubble-long {
+      max-width: min(42vw, 360px);
+      font-size: 0.84rem;
+      line-height: 1.42;
+    }
+    .speech-bubble-3d.speech-bubble-xlong {
+      max-width: min(50vw, 420px);
+      font-size: 0.78rem;
+      line-height: 1.38;
+    }
+    .speech-bubble-3d::after {
+      content: '';
+      position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%);
+      border: 9px solid transparent;
+      border-top-color: rgba(201,168,76,0.55);
+      border-bottom: none;
+    }
+
+    /* Thinking spinner */
+    .thinking-bubble {
+      position: fixed;
+      top: 0; left: 0;
+      background: rgba(0,0,0,0.8);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 20px;
+      padding: 0.4rem 0.8rem;
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      pointer-events: none;
+      z-index: 30;
+      display: flex; align-items: center; gap: 0.4rem;
+      will-change: transform;
+    }
+    .thinking-dots span {
+      display: inline-block;
+      width: 5px; height: 5px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: thinkDot 1.2s ease-in-out infinite;
+    }
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes thinkDot { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* Spectator CoT feed — wider, better positioned */
+    /* ══ NIGHT SPECTATOR LAYOUT ══════════════════════════════════════════════
+       FINAL DESIGN — no overlapping zones:
+
+       TOP-CENTRE  (z135): #spec-announcer         top:8px   (phase flash)
+       TOP-CENTRE  (z130): #spectator-night-switcher top:58px (compact role btns)
+       LEFT EDGE   (z122): #spec-vote-tracker       top:120px left:10px
+       LEFT EDGE   (z118): #spec-event-feed          bottom:120px left:10px
+       LEFT EDGE   (z116): #spec-mafia-chat          bottom:10px left:10px
+       BOTTOM ROW  (z125): TWO panels side-by-side, centred:
+                           LEFT: #spec-lower-third  (speaker name + quote)
+                           RIGHT:#spec-cot-bar       (thinking stream)
+       HIDDEN: #spec-night-icons — replaced by switcher buttons
+    ═══════════════════════════════════════════════════════════════════════ */
+
+    /* Role switcher — compact top-centre bar */
+    #spectator-night-switcher {
+      position: fixed !important;
+      top: 0 !important; bottom: auto !important;
+      left: 0 !important; transform: none !important;
+      z-index: 1 !important;
+      max-width: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+      pointer-events: none !important;
+    }
+    #spec-cot-container {
+      display: block !important;
+      position: fixed !important;
+      /* Default (non-minimal): bottom-right, well away from subtitle */
+      bottom: 20px !important;
+      right: 14px !important;
+      top: auto !important;
+      left: auto !important;
+      transform: none !important;
+      width: 200px !important;
+      min-height: 0 !important;
+      max-height: 40px !important;
+      overflow-y: auto !important;
+      padding: 0.32rem 0.65rem !important;
+      background: rgba(4,6,16,0.90) !important;
+      border: 1px solid rgba(255,255,255,0.08) !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.55) !important;
+      backdrop-filter: blur(8px) !important;
+      z-index: 124 !important;
+      pointer-events: auto !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(255,255,255,0.15) transparent !important;
+    }
+    #spec-cot-container::-webkit-scrollbar { width: 3px !important; }
+    #spec-cot-container::-webkit-scrollbar-track { background: transparent !important; }
+    #spec-cot-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18) !important; border-radius: 2px !important; }
+    #spec-thought-feed  { display: block !important; }
+    #spec-cot-bar { display: none !important; }
+    #spectator-night-switcher > div:first-child {
+      margin-bottom: 0 !important; gap: 5px !important; justify-content: center !important;
+    }
+    #spec-night-icons { display: none !important; }
+
+    body.spec-night-minimal #player-list,
+    body.spec-night-minimal #spec-announcer,
+    body.spec-night-minimal #spec-vote-tracker,
+    body.spec-night-minimal #spec-event-feed,
+    body.spec-night-minimal #spec-mafia-chat,
+    body.spec-night-minimal #spec-cot-bar,
+    body.spec-night-minimal #thought-panel,
+    body.spec-night-minimal #night-location-badge,
+    body.spec-night-minimal #spec-shot-label,
+    body.spec-night-minimal #spec-btn-mafia,
+    body.spec-night-minimal #spec-btn-sheriff,
+    body.spec-night-minimal #spec-btn-doctor,
+    body.spec-night-minimal .spec-switcher-btn,
+    body.spec-night-minimal #spec-now-watching,
+    body.spec-night-minimal #spec-night-icons,
+    body.spec-night-minimal #night-location-bg {
+      display: none !important;
+    }
+
+    /* ── Night minimal: clean 2-box layout ─────────────────────────────────
+       BOX 1 (Subtitle): bottom-CENTRE — speaker name + final answer text
+       BOX 2 (CoT):      bottom-RIGHT  — compact scrollable AI thinking ticker
+                         ≈ half the subtitle bar height, clears all other elements
+       NOTHING ELSE visible at night spectate.
+    ─────────────────────────────────────────────────────────────────────── */
+
+    /* Hide switcher chrome in minimal mode — only the CoT container inside escapes via fixed */
+    body.spec-night-minimal #spectator-night-switcher {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      min-width: 0 !important;
+    }
+
+    body.spec-night-minimal #spec-cot-container {
+      /* ── Night spectator: slide into the player-list slot (right rail) ── */
+      position: fixed !important;
+      top: 50% !important;
+      right: 12px !important;
+      bottom: auto !important;
+      left: auto !important;
+      transform: translateY(-50%) !important;
+
+      width: 210px !important;
+      /* FIX: height:88vh (not just max-height) forces the CoT box to always
+         fill the full player-list slot regardless of content length.
+         max-height alone lets it shrink when there is little text, which
+         cuts off long chain-of-thought streams and looks mismatched. */
+      height: 88vh !important;
+      max-height: 88vh !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+
+      /* Match player-list visual style exactly */
+      padding: 8px 6px !important;
+      background: rgba(4,4,14,0.93) !important;
+      border: 1px solid rgba(201,168,76,0.2) !important;
+      border-radius: 12px !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+      backdrop-filter: blur(8px) !important;
+      z-index: 124 !important;
+      pointer-events: auto !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(201,168,76,0.2) transparent !important;
+    }
+    body.spec-night-minimal #spec-cot-container::-webkit-scrollbar { width: 3px !important; }
+    body.spec-night-minimal #spec-cot-container::-webkit-scrollbar-track { background: transparent !important; }
+    body.spec-night-minimal #spec-cot-container::-webkit-scrollbar-thumb {
+      background: rgba(201,168,76,0.25) !important; border-radius: 2px !important;
+    }
+    body.spec-night-minimal #spec-lower-third {
+      /* Subtitle: centred at bottom, full safe-width */
+      bottom: 24px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: min(560px, calc(100vw - 36px)) !important;
+    }
+    body.spec-night-minimal #night-cot-header-label {
+      /* Matches #player-list-title style — gold Cinzel caps */
+      font-family: 'Cinzel', serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.85);
+      margin-bottom: 6px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      line-height: 1;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+    }
+    body.spec-night-minimal #night-cot-header-label .cot-dot {
+      display: inline-block;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.8);
+      animation: cotPulse 1.4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes cotPulse {
+      0%,100% { opacity: 0.3; transform: scale(1); }
+      50%      { opacity: 1;   transform: scale(1.35); }
+    }
+    /* CoT text stream — very small, dim, readable on scroll */
+    body.spec-night-minimal #spec-thought-feed {
+      font-family: 'Crimson Pro', serif !important;
+      font-size: 0.80rem !important;
+      color: rgba(200,215,230,0.92) !important;
+      line-height: 1.5 !important;
+    }
+
+    /* Announcer — above switcher */
+    #spec-announcer {
+      top: 8px !important;
+      z-index: 135 !important;
+    }
+
+    /* LEFT EDGE: vote tracker */
+    #spec-vote-tracker {
+      position: fixed !important;
+      top: 112px !important; left: 12px !important; right: auto !important;
+      transform: none !important;
+      z-index: 122 !important;
+      max-height: 210px !important;
+      overflow-y: auto !important;
+      width: 160px !important;
+    }
+
+    /* LEFT EDGE: event feed */
+    #spec-event-feed {
+      position: fixed !important;
+      bottom: 138px !important; left: 12px !important; right: auto !important;
+      top: auto !important;
+      max-height: 150px !important;
+      z-index: 118 !important;
+      width: 172px !important;
+    }
+
+    /* LEFT EDGE: mafia chat */
+    #spec-mafia-chat {
+      position: fixed !important;
+      bottom: 12px !important; left: 12px !important; right: auto !important;
+      z-index: 116 !important;
+      width: 172px !important;
+      max-height: 112px !important;
+      overflow-y: auto !important;
+    }
+
+    /* ── BOTTOM-CENTRE: 2 side-by-side panels ─────────────────────────── */
+    /* CENTERED panel: speaker name + current quote - EXPANDS WITH TEXT */
+    #spec-lower-third {
+      position: fixed !important;
+      bottom: 54px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: min(480px, calc(100vw - 420px)) !important;
+      z-index: 125 !important;
+      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.95)) !important;
+      text-align: center !important;
+    }
+    #spec-lower-third.day-mode {
+      bottom: 12px !important;
+    }
+    #spec-lower-speaker {
+      font-size: 0.7rem !important;
+      padding: 5px 14px !important;
+      letter-spacing: 0.15em !important;
+      background: rgba(10,10,20,0.98) !important;
+      border: 1px solid rgba(201,168,76,0.4) !important;
+      border-bottom: none !important;
+      border-radius: 8px 8px 0 0 !important;
+      color: #c9a84c !important;
+      font-family: 'Cinzel', serif !important;
+      display: inline-block !important;
+    }
+    #spec-lower-text {
+      font-size: 1rem !important;
+      padding: 12px 18px 14px !important;
+      min-height: 44px !important;
+      line-height: 1.55 !important;
+      overflow-wrap: break-word !important;
+      word-break: break-word !important;
+      white-space: pre-wrap !important;
+      background: rgba(8,8,16,0.98) !important;
+      border: 1px solid rgba(201,168,76,0.3) !important;
+      border-radius: 0 0 8px 8px !important;
+      color: #f0e6c8 !important;
+      font-family: 'Crimson Pro', serif !important;
+      /* Grows with content — NO scroll, NO max-height */
+      overflow: visible !important;
+      max-height: none !important;
+    }
+
+    /* RIGHT panel: live AI thinking stream */
+    #spec-cot-bar {
+      position: fixed;
+      bottom: 210px;
+      right: 230px;
+      left: auto;
+      transform: none;
+      width: 260px;
+      z-index: 125;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 18px rgba(0,0,0,0.95));
+    }
+    #spec-cot-bar-header {
+      background: rgba(2,2,10,0.97);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      padding: 3px 10px;
+      font-family: 'Cinzel', serif; font-size: 0.52rem;
+      color: rgba(255,255,255,0.32); letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    #spec-cot-bar-text {
+      background: rgba(4,4,14,0.97);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 0 0 6px 6px;
+      padding: 7px 11px 9px;
+      font-family: 'Crimson Pro', serif; font-size: 0.82rem;
+      color: rgba(200,210,220,0.8);
+      min-height: 34px; max-height: 80px;
+      overflow-y: auto; line-height: 1.52;
+      overflow-wrap: break-word;
+    }
+
+    .thinking-ellipsis::after { content: '...'; animation: blink 1.2s infinite; }
+
+    /* Subtitle bar — player mode only (hidden in spectator via JS) */
+    #subtitle-bar {
+      position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+      z-index: 45; width: min(500px, 50vw); text-align: center;
+      pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
+    }
+    #subtitle-bar.visible { opacity: 1; pointer-events: none; }
+    #subtitle-speaker {
+      font-family: 'Cinzel', serif; font-size: 0.7rem;
+      letter-spacing: 0.15em; color: var(--gold); margin-bottom: 3px;
+      text-transform: uppercase;
+      text-shadow: 0 1px 6px rgba(0,0,0,1);
+      background: rgba(10,10,20,0.98);
+      border: 1px solid rgba(201,168,76,0.4);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 5px 14px;
+      display: inline-block;
+    }
+    #subtitle-text {
+      background: rgba(8,8,16,0.98); border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 0 0 8px 8px;
+      padding: 12px 18px 14px;
+      font-family: 'Crimson Pro', serif; font-size: 1rem;
+      line-height: 1.55; color: #f0e6c8;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+      /* NO SCROLL - height expands with content */
+      min-height: 44px;
+      width: 100%;
+      overflow: visible;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      white-space: pre-wrap;
+      box-sizing: border-box;
+    }
+    /* Night thought panel */
+    #thought-panel {
+      position: fixed; bottom: 220px; left: 50%; transform: translateX(-50%);
+      z-index: 46; width: min(720px, 94vw);
+      background: rgba(0,0,0,0.90); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 0.8rem 1.1rem; display: none; pointer-events: none;
+    }
+    #thought-panel.visible { display: block; }
+    #thought-panel-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    #thought-panel-icon { font-size: 1.3rem; }
+    #thought-panel-name { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.1em; color: var(--gold); }
+    #thought-panel-role { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.08em; opacity: 0.8; }
+    #thought-thinking {
+      font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.88rem;
+      color: #9ca3af; margin-bottom: 0.45rem; padding: 0.35rem 0.6rem;
+      background: rgba(255,255,255,0.04); border-left: 2px solid rgba(255,255,255,0.12);
+      border-radius: 0 4px 4px 0; line-height: 1.5; min-height: 0;
+    }
+    #thought-answer { font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: #f0f0f0; line-height: 1.55; }
+    .thought-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 0.4rem 0; }
+
+
+    /* Tutorial overlay */
+    /* Tutorial overlay — base only; Tutorial.js injects full styles */
+    #tutorial-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #0a0a0f;
+      display: none;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+      opacity: 0; transition: opacity 0.4s ease;
+    }
+    #tutorial-overlay.visible { display: flex; opacity: 1; pointer-events: all; }
+    /* Legacy classes kept for compat — Tutorial.js overrides these */
+    .tutorial-step { display: none; }
+    .tutorial-step.active { display: block; }
+    .tutorial-emoji { font-size: 3rem; }
+    .tutorial-nav { display: flex; gap: 1rem; justify-content: center; }
+    .tutorial-btn {
+      background: var(--blood-red); border: 1px solid var(--gold);
+      color: var(--gold-light); font-family: 'Cinzel', serif;
+      font-size: 0.8rem; letter-spacing: 0.15em;
+      padding: 0.6rem 1.5rem; border-radius: 4px; cursor: pointer;
+    }
+    .tutorial-btn.skip {
+      background: transparent;
+      border-color: rgba(201,168,76,0.2);
+      color: var(--text-muted);
+    }
+    .tutorial-progress { display: flex; gap: 0.4rem; justify-content: center; margin-bottom: 1.5rem; }
+    .tutorial-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.2);
+      transition: background 0.3s;
+    }
+    .tutorial-dot.active { background: var(--gold); }
+
+    @media (max-width: 1180px) {
+      body.spec-night-minimal #spec-cot-container {
+        width: 170px !important;
+        right: 8px !important;
+        height: 85vh !important;
+        max-height: 85vh !important;
+      }
+      #spec-lower-third {
+        width: min(480px, calc(100vw - 32px)) !important;
+      }
+    }
+
+    /* Connection overlay */
+    #connection-overlay {
+      position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 0.75rem 1.5rem;
+      border-radius: 20px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      z-index: 9985;
+      display: none;
+    }
+    #connection-overlay.visible { display: block; }
+
+    /* Investigation result */
+    #investigation-result {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.95);
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      padding: 2rem 3rem;
+      text-align: center;
+      z-index: 9980;
+      display: none;
+    }
+    #investigation-result.visible { display: block; }
+    #investigation-result h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    #investigation-result .result-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+    #investigation-result .result-text {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.1rem;
+      color: var(--text-light);
+    }
+    #investigation-result button {
+      margin-top: 1rem;
+      background: var(--blood-red);
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 0.5rem 1.2rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Particles canvas */
+    #particles-canvas {
+      position: fixed; inset: 0; z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .tier-cards { grid-template-columns: repeat(3, 1fr); }
+      .form-card { padding: 1.5rem; }
+      #chat-log { display: none; }
+      #player-list { width: 140px; }
+      .vote-targets { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    }
+    @media (max-width: 480px) {
+      #top-hud { padding: 0 0.5rem; gap: 0.5rem; }
+      #token-counter { display: none; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SPECTATOR MODE HUD — Turing Games inspired
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* Player sidebar — left edge, always visible in spectator */
+    #spec-sidebar {
+      position: fixed;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 160px;
+      display: none !important; /* roles shown in right player list instead */
+      flex-direction: column;
+      gap: 4px;
+      z-index: 120;
+      pointer-events: none;
+      padding: 8px 0 8px 8px;
+    }
+    #spec-sidebar.visible { display: flex; }
+
+    .spec-player-card {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(5,5,12,0.82);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0 8px 8px 0;
+      padding: 5px 8px 5px 6px;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+    }
+    .spec-player-card.alive { border-left-color: rgba(100,255,100,0.6); }
+    .spec-player-card.dead  {
+      border-left-color: rgba(255,60,60,0.4);
+      opacity: 0.45;
+      filter: grayscale(0.7);
+    }
+    .spec-player-card.speaking {
+      border-left-color: #ffd700;
+      background: rgba(40,30,0,0.9);
+      box-shadow: 0 0 12px rgba(255,215,0,0.25);
+    }
+    .spec-player-avatar {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: #fff;
+    }
+    .spec-player-info { flex: 1; min-width: 0; }
+    .spec-player-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      color: #e5e7eb;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-weight: 600;
+    }
+    .spec-player-role {
+      font-size: 0.55rem;
+      color: rgba(255,255,255,0.45);
+      font-family: 'Crimson Pro', serif;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .spec-player-status { font-size: 0.65rem; flex-shrink: 0; }
+
+    /* Phase/Event announcer — top-center dramatic overlay */
+    #spec-announcer {
+      position: fixed;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 130;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+    }
+    #spec-announcer.visible { display: flex; }
+    #spec-announcer-phase {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      color: rgba(201,168,76,0.7);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    #spec-announcer-event {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(201,168,76,0.8), 0 2px 4px rgba(0,0,0,0.9);
+      text-align: center;
+    }
+
+    /* Kill/Elimination dramatic overlay — full screen flash */
+    #spec-kill-overlay {
+      position: fixed; inset: 0;
+      z-index: 200;
+      display: none;
+      align-items: center; justify-content: center;
+      background: rgba(120,0,0,0);
+      pointer-events: none;
+      flex-direction: column;
+    }
+    #spec-kill-overlay.active {
+      display: flex;
+      animation: killFlash 2.5s forwards;
+    }
+    @keyframes killFlash {
+      0%   { background: rgba(120,0,0,0); }
+      10%  { background: rgba(120,0,0,0.35); }
+      30%  { background: rgba(120,0,0,0.15); }
+      100% { background: rgba(120,0,0,0); }
+    }
+    #spec-kill-name {
+      font-family: 'Cinzel', serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 40px #ff0000, 0 0 80px rgba(255,0,0,0.5);
+      animation: killNameAnim 2.5s forwards;
+      text-align: center;
+      line-height: 1.1;
+    }
+    #spec-kill-role {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      color: #fca5a5;
+      letter-spacing: 0.3em;
+      margin-top: 0.5rem;
+      animation: killNameAnim 2.5s forwards;
+    }
+    @keyframes killNameAnim {
+      0%   { opacity: 0; transform: scale(0.7); }
+      15%  { opacity: 1; transform: scale(1.05); }
+      70%  { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.02); }
+    }
+
+    /* ── Subtitle lower-third — narrow, easy to read ────────────── */
+    #spec-lower-third {
+      position: fixed; bottom: 140px; left: 50%;
+      transform: translateX(-50%);
+      width: min(520px, 72vw);
+      z-index: 125;
+      display: none; flex-direction: column; align-items: center;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.85));
+    }
+    #spec-lower-third.visible { display: flex; }
+    /* Day phase: no night-panel stack, so bring subtitle much closer to bottom */
+    #spec-lower-third.day-mode { bottom: 20px; }
+    #spec-lower-speaker {
+      background: rgba(0,0,0,0.97);
+      border: 1px solid var(--spec-role-color, rgba(201,168,76,0.6));
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 4px 16px;
+      font-family: 'Cinzel', serif; font-size: 0.62rem;
+      color: var(--spec-role-color, var(--gold));
+      letter-spacing: 0.18em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 6px;
+      width: 100%;
+    }
+    #spec-lower-text {
+      background: rgba(4,4,16,0.97);
+      border: 1px solid var(--spec-role-color, rgba(201,168,76,0.3));
+      border-radius: 0 0 8px 8px;
+      width: 100%;
+      /* Grows with content — no scroll, no fixed max-height */
+      padding: 10px 14px;
+      font-family: 'Crimson Pro', serif;
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      line-height: 1.6;
+      color: #f5f5f0;
+      overflow: visible;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      white-space: pre-wrap;
+      box-sizing: border-box;
+    }
+
+    /* Vote tracker — right side panel */
+    #spec-vote-tracker {
+      position: fixed;
+      right: 10px; top: 130px;
+      width: 170px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 120;
+      pointer-events: none;
+    }
+    #spec-vote-tracker.visible { display: flex; }
+    #spec-vote-header {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      color: rgba(201,168,76,0.7);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+    .spec-vote-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(5,5,12,0.8);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 6px;
+      padding: 5px 8px;
+    }
+    .spec-vote-name {
+      flex: 1;
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.75rem;
+      color: #e5e7eb;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .spec-vote-count {
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #ef4444;
+      min-width: 20px;
+      text-align: right;
+    }
+    .spec-vote-bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      border-radius: 6px;
+      background: rgba(239,68,68,0.12);
+      transition: width 0.4s;
+    }
+
+    /* Event feed — right side below vote tracker */
+    #spec-event-feed {
+      position: fixed;
+      right: 10px; bottom: 80px;
+      width: 200px;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 120;
+      pointer-events: none;
+    }
+    #spec-event-feed.visible { display: flex; }
+    .spec-event-item {
+      background: rgba(5,5,12,0.88);
+      border-left: 3px solid rgba(201,168,76,0.5);
+      border-radius: 0 6px 6px 0;
+      padding: 5px 8px;
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.78rem;
+      color: #d1d5db;
+      animation: eventFadeIn 0.3s ease;
+    }
+    .spec-event-item.kill  { border-left-color: #ef4444; color: #fca5a5; }
+    .spec-event-item.vote  { border-left-color: #fcd34d; }
+    .spec-event-item.night { border-left-color: #818cf8; }
+    @keyframes eventFadeIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+  
+    /* ── Spectator Warning Modal ─────────────────────────────────── */
+    .spec-warning-modal {
+      position: fixed; inset: 0;
+      z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(4px);
+    }
+    .spec-warning-box {
+      background: rgba(10,8,20,0.98);
+      border: 1px solid rgba(239,68,68,0.5);
+      border-radius: 14px;
+      padding: 2.2rem 2.4rem;
+      max-width: 440px;
+      width: 90vw;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(239,68,68,0.2);
+    }
+    .spec-warning-icon { font-size: 3rem; margin-bottom: 0.8rem; }
+    .spec-warning-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      color: #ef4444;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.1em;
+    }
+    .spec-warning-body {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem;
+      color: #d1d5db;
+      line-height: 1.6;
+      margin-bottom: 1.6rem;
+    }
+    .spec-warning-body strong { color: #fca5a5; }
+    .spec-warning-actions { display: flex; gap: 0.8rem; justify-content: center; }
+    .spec-warning-confirm {
+      background: rgba(139,0,0,0.8);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 0.6rem 1.4rem;
+      border-radius: 8px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .spec-warning-confirm:hover { background: rgba(180,0,0,0.9); }
+    .spec-warning-cancel {
+      background: rgba(30,30,40,0.8);
+      border: 1px solid rgba(156,163,175,0.3);
+      color: #9ca3af;
+      padding: 0.6rem 1.4rem;
+      border-radius: 8px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .spec-warning-cancel:hover { background: rgba(50,50,60,0.9); color: #e5e7eb; }
+
+    /* ── Night Phase Icons Row ────────────────────────────────────── */
+    #spec-night-icons {
+      position: fixed;
+      top: 52px; left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      gap: 8px;
+      z-index: 130;
+      pointer-events: none;
+    }
+    #spec-night-icons.visible { display: flex; }
+    .spec-night-icon {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(5,5,12,0.82);
+      color: rgba(255,255,255,0.3);
+      transition: all 0.4s;
+      opacity: 0.4;
+    }
+    .spec-night-icon .ni-emoji { font-size: 1.2rem; margin-bottom: 2px; }
+    .spec-night-icon.active {
+      opacity: 1;
+      color: #fff;
+      transform: scale(1.1);
+    }
+    .spec-night-icon.active.mafia-icon  { background: rgba(80,0,0,0.9);   border-color: #ef4444; box-shadow: 0 0 18px rgba(239,68,68,0.4); }
+    .spec-night-icon.active.doctor-icon { background: rgba(6,16,50,0.9);  border-color: #60a5fa; box-shadow: 0 0 18px rgba(96,165,250,0.4); }
+    .spec-night-icon.active.sheriff-icon{ background: rgba(30,24,0,0.9);  border-color: #fcd34d; box-shadow: 0 0 18px rgba(252,211,77,0.4); }
+    .spec-night-icon.done { opacity: 0.25; text-decoration: line-through; }
+
+    /* Night icon countdown progress bar */
+    .spec-night-icon .ni-timer {
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+    .spec-night-icon .ni-timer-bar {
+      height: 100%;
+      width: 100%;
+      border-radius: 2px;
+      transition: width 1s linear;
+    }
+    .spec-night-icon.mafia-icon  .ni-timer-bar { background: #ef4444; }
+    .spec-night-icon.doctor-icon .ni-timer-bar { background: #60a5fa; }
+    .spec-night-icon.sheriff-icon .ni-timer-bar { background: #fcd34d; }
+
+    /* Vignette overlay for dramatic moments */
+    #spec-vignette {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 195;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0) 100%);
+      opacity: 0;
+      transition: opacity 0.6s;
+    }
+    #spec-vignette.kill  {
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(80,0,0,0.6) 100%);
+      opacity: 1;
+    }
+    #spec-vignette.night {
+      /* Subtle night vignette — just enough to frame, not to darken */
+      background: radial-gradient(ellipse at center, transparent 42%, rgba(0,4,22,0.38) 100%);
+      opacity: 1;
+    }
+
+    /* Mafia secret chat panel — spectator only */
+    #spec-mafia-chat {
+      position: fixed;
+      right: 188px; bottom: 20px;
+      width: 190px;
+      display: none;
+      flex-direction: column;
+      gap: 0;
+      z-index: 120;
+      pointer-events: none;
+    }
+    #spec-mafia-chat.visible { display: flex; }
+    #spec-mafia-chat-header {
+      background: rgba(80,0,0,0.92);
+      border: 1px solid rgba(239,68,68,0.5);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 5px 10px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      color: #fca5a5;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    #spec-mafia-chat-body {
+      background: rgba(10,2,2,0.9);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 0 0 8px 8px;
+      padding: 6px 8px;
+      max-height: 160px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .spec-mafia-msg {
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.75rem;
+      color: #fca5a5;
+      line-height: 1.4;
+      padding-bottom: 3px;
+      border-bottom: 1px solid rgba(239,68,68,0.1);
+    }
+    .spec-mafia-msg .smm-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      color: #ef4444;
+      display: block;
+      margin-bottom: 1px;
+    }
+
+    /* "Now watching" location badge - moved to top-left, smaller */
+    #spec-watching {
+      position: fixed;
+      top: 62px; left: 12px;
+      transform: none;
+      z-index: 125;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: rgba(5,5,12,0.9);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      padding: 3px 10px 3px 8px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.6);
+      pointer-events: none;
+    }
+    #spec-watching.visible { display: flex; }
+    #spec-watching-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: specDotPulse 1.4s infinite;
+    }
+    @keyframes specDotPulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(0.7); }
+    }
+
+
+    /* ── Mode selection cards ──────────────────────────────────────────── */
+    .mode-choice-btn {
+      flex: 1; min-width: 180px;
+      background: rgba(10,8,20,0.9);
+      border: 2px solid rgba(201,168,76,0.25);
+      border-radius: 12px;
+      padding: 2rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-align: center;
+      color: var(--text-light);
+    }
+    .mode-choice-btn:hover {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.08);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(201,168,76,0.15);
+    }
+    .mode-choice-icon { font-size: 2.8rem; margin-bottom: 0.8rem; }
+    .mode-choice-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 0.15em;
+      margin-bottom: 0.6rem;
+    }
+    .mode-choice-desc {
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.5;
+    }
+    #mode-watch-btn .mode-choice-icon { filter: brightness(0.85); }
+    .back-btn {
+      background: none;
+      border: none;
+      color: rgba(201,168,76,0.6);
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 1.2rem;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--gold); }
+
+
+    /* ── Night location background overlays ─────────────────────────────── */
+    #night-location-bg {
+      position: fixed; inset: 0; z-index: 10;
+      pointer-events: none;
+      transition: background 1.2s ease, opacity 0.8s ease;
+      opacity: 0;
+    }
+    #night-location-bg.visible { opacity: 1; }
+    #night-location-bg.mafia   { background: radial-gradient(ellipse at 50% 80%, rgba(80,0,0,0.45) 0%, transparent 70%); }
+    #night-location-bg.sheriff { background: radial-gradient(ellipse at 50% 80%, rgba(80,65,0,0.35) 0%, transparent 70%); }
+    #night-location-bg.doctor  { background: radial-gradient(ellipse at 50% 80%, rgba(0,40,80,0.35) 0%, transparent 70%); }
+
+    /* ── Night location name badge ──────────────────────────────────────── */
+    #night-location-badge {
+      position: fixed; bottom: 80px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 130; pointer-events: none;
+      display: none; align-items: center; gap: 10px;
+      background: rgba(0,0,0,0.88);
+      border-radius: 10px;
+      padding: 8px 22px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem; letter-spacing: 0.15em;
+      border: 1px solid currentColor;
+    }
+    #night-location-badge.visible { display: flex; }
+    #night-location-badge.mafia   { color: #ef4444; border-color: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.3); }
+    #night-location-badge.sheriff { color: #fcd34d; border-color: #fcd34d; box-shadow: 0 0 20px rgba(252,211,77,0.3); }
+    #night-location-badge.doctor  { color: #60a5fa; border-color: #60a5fa; box-shadow: 0 0 20px rgba(96,165,250,0.3); }
+
+  </style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loading-screen">
+  <div class="load-title">AI MAFIA</div>
+  <div class="load-sub">PREPARING THE VILLAGE</div>
+  <div id="loading-step">Initialising engine...</div>
+  <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+  <div id="loading-pct">0%</div>
+  <div id="loading-steps-list">
+    <div class="load-step-item active" id="lstep-renderer"><span class="load-step-icon">□</span>Setting up renderer</div>
+    <div class="load-step-item" id="lstep-world"><span class="load-step-icon">□</span>Building voxel world</div>
+    <div class="load-step-item" id="lstep-village"><span class="load-step-icon">□</span>Constructing village & town hall</div>
+    <div class="load-step-item" id="lstep-sky"><span class="load-step-icon">□</span>Painting sky & lighting</div>
+    <div class="load-step-item" id="lstep-chars"><span class="load-step-icon">□</span>Spawning AI characters</div>
+    <div class="load-step-item" id="lstep-ui"><span class="load-step-icon">□</span>Loading UI systems</div>
+    <div class="load-step-item" id="lstep-done"><span class="load-step-icon">□</span>Entering the village</div>
+  </div>
+  <!-- Shown after loading finishes — first click unlocks AudioContext -->
+  <div id="click-to-enter">
+    <div class="cte-icon">🔊</div>
+    <div class="cte-text">CLICK ANYWHERE TO CONTINUE</div>
+  </div>
+</div>
+
+<!-- Background canvas -->
+<div id="canvas-container"><canvas id="three-canvas"></canvas></div>
+
+<!-- Firefly particles -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- LOBBY (shown before game) -->
+<div id="lobby">
+  <div id="lobby-overlay"></div>
+
+  <!-- HERO -->
+  <section class="lobby-hero" id="hero-section">
+    <div class="hero-title">AI MAFIA</div>
+    <div class="hero-sub">THE ULTIMATE AI SHOWDOWN</div>
+    <div class="hero-tagline">Watch AI models argue, deceive, and eliminate each other in a battle of wit</div>
+    <div class="scroll-hint">↓ SCROLL TO PLAY ↓</div>
+  </section>
+
+  <!-- MODE SELECTION — shown first after loading -->
+  <section class="form-section" id="form-section">
+    <!-- ── Screen 1: Choose mode ───────────────────────────────────────── -->
+    <div class="form-card" id="mode-select-card">
+      <div class="form-card-title">HOW WILL YOU PLAY?</div>
+      <div class="form-card-sub">Choose your role in the village</div>
+
+      <div style="display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;">
+        <button class="mode-choice-btn" id="mode-play-btn" data-ui-sound="roleSelect" onclick="chooseMode('play')">
+          <div class="mode-choice-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+  <rect x="7" y="1" width="2" height="1" fill="#1a1a1a"/>
+  <rect x="6" y="2" width="2" height="1" fill="#c8c8d0"/>
+  <rect x="5" y="3" width="2" height="1" fill="#d4d4dc"/>
+  <rect x="4" y="4" width="2" height="1" fill="#c8c8d0"/>
+  <rect x="3" y="5" width="2" height="1" fill="#b0b0b8"/>
+  <rect x="2" y="6" width="2" height="1" fill="#a0a0a8"/>
+  <rect x="1" y="7" width="2" height="1" fill="#909098"/>
+  <rect x="7" y="2" width="1" height="1" fill="#f0f0f8"/>
+  <rect x="6" y="3" width="1" height="1" fill="#e8e8f0"/>
+  <rect x="5" y="4" width="1" height="1" fill="#e0e0e8"/>
+  <rect x="4" y="5" width="1" height="1" fill="#d8d8e0"/>
+  <rect x="3" y="6" width="1" height="1" fill="#d0d0d8"/>
+  <rect x="2" y="7" width="1" height="1" fill="#c8c8d0"/>
+  <rect x="0" y="8" width="3" height="1" fill="#2a1a0a"/>
+  <rect x="1" y="7" width="1" height="3" fill="#3a2a10"/>
+  <rect x="2" y="7" width="1" height="3" fill="#3a2a10"/>
+  <rect x="1" y="9" width="3" height="4" fill="#1e1008"/>
+  <rect x="2" y="10" width="1" height="2" fill="#2e1a10"/>
+  <rect x="1" y="13" width="3" height="2" fill="#3a2a10"/>
+  <rect x="2" y="14" width="1" height="1" fill="#4a3a18"/>
+  <rect x="11" y="3" width="2" height="1" fill="#cc0000"/>
+  <rect x="11" y="4" width="3" height="2" fill="#aa0000"/>
+  <rect x="12" y="6" width="2" height="1" fill="#880000"/>
+</svg></div>
+          <div class="mode-choice-title">PLAY</div>
+          <div class="mode-choice-desc">Join the game as a player.<br>You vs AI opponents.</div>
+        </button>
+        <button class="mode-choice-btn" id="mode-watch-btn" data-ui-sound="roleSelect" onclick="chooseMode('spectate')">
+          <div class="mode-choice-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+  <rect x="2" y="5" width="2" height="1" fill="#9ca3af"/>
+  <rect x="4" y="4" width="8" height="1" fill="#9ca3af"/>
+  <rect x="12" y="5" width="2" height="1" fill="#9ca3af"/>
+  <rect x="1" y="6" width="14" height="4" fill="#f9fafb"/>
+  <rect x="2" y="5" width="12" height="5" fill="#f9fafb"/>
+  <rect x="5" y="6" width="6" height="4" fill="#3b82f6"/>
+  <rect x="6" y="5" width="4" height="5" fill="#3b82f6"/>
+  <rect x="6" y="7" width="4" height="2" fill="#1d4ed8"/>
+  <rect x="7" y="6" width="2" height="4" fill="#1d4ed8"/>
+  <rect x="7" y="7" width="2" height="2" fill="#1a1a1a"/>
+  <rect x="7" y="6" width="1" height="1" fill="#bfdbfe"/>
+  <rect x="2" y="10" width="2" height="1" fill="#9ca3af"/>
+  <rect x="4" y="11" width="8" height="1" fill="#9ca3af"/>
+  <rect x="12" y="10" width="2" height="1" fill="#9ca3af"/>
+  <rect x="2" y="3" width="1" height="1" fill="#4b5563"/>
+  <rect x="13" y="3" width="1" height="1" fill="#4b5563"/>
+  <rect x="1" y="13" width="1" height="1" fill="#4b5563"/>
+  <rect x="14" y="13" width="1" height="1" fill="#4b5563"/>
+</svg></div>
+          <div class="mode-choice-title">SPECTATE</div>
+          <div class="mode-choice-desc">Watch AIs play each other.<br>All players are LLMs.</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Screen 2a: PLAY form ────────────────────────────────────────── -->
+    <div class="form-card" id="play-form-card" style="display:none">
+      <button class="back-btn" data-ui-sound="menuSelect" onclick="chooseMode(null)">← BACK</button>
+      <div class="form-card-title">PLAY AS HUMAN</div>
+      <div class="form-card-sub">You + AI opponents in the village</div>
+
+      <div class="api-error-banner" id="api-error-banner"></div>
+
+      <div class="form-group">
+        <label>API KEY</label>
+        <input type="password" id="api-key-input" placeholder="Your Commonstack API key..." autocomplete="off" />
+        <div class="key-hint">Get your key at <a href="https://commonstack.ai" target="_blank" style="color:var(--gold)">commonstack.ai</a></div>
+      </div>
+      <div class="form-group">
+        <label>YOUR NAME</label>
+        <input type="text" id="player-name-input" placeholder="Enter your name" maxlength="20" />
+      </div>
+      <div class="form-group">
+        <label>TOTAL PLAYERS (YOU + AI)</label>
+        <select id="player-count-select" onchange="updatePlayerCountHint(false); updateMafiaCount(document.getElementById('mafia-count-slider').value, false)">
+          <option value="4">4 Players (you + 3 AI)</option>
+          <option value="5">5 Players (you + 4 AI)</option>
+          <option value="6" selected>6 Players (you + 5 AI)</option>
+          <option value="7">7 Players (you + 6 AI)</option>
+          <option value="8">8 Players (you + 7 AI)</option>
+          <option value="10">10 Players (you + 9 AI)</option>
+          <option value="12">12 Players (you + 11 AI)</option>
+          <option value="15">15 Players (you + 14 AI)</option>
+        </select>
+        <div class="key-hint" id="player-count-hint-play">You take one slot. The rest are AI opponents.</div>
+      </div>
+      <div class="form-group">
+        <label>NUMBER OF MAFIA <span id="mafia-count-display" style="color:var(--gold)">2</span></label>
+        <input type="range" id="mafia-count-slider" min="1" max="8" value="2"
+          style="width:100%;accent-color:var(--mafia-red);cursor:pointer;"
+          oninput="updateMafiaCount(this.value, false)" />
+        <div class="key-hint">Sheriff × 1 and Doctor × 1 are always in. Rest are Villagers.</div>
+        <div id="mafia-balance-warn" style="display:none;margin-top:6px;padding:7px 10px;border-radius:5px;background:rgba(220,38,38,0.13);border:1px solid rgba(220,38,38,0.45);color:#fca5a5;font-size:0.75rem;line-height:1.5;"></div>
+      </div>
+      <div class="form-group">
+        <label>SPEAKING TIME Per Turn</label>
+        <select id="speak-time-select">
+          <option value="15">15 Seconds (Fast)</option>
+          <option value="30" selected>30 Seconds (Standard)</option>
+          <option value="60">60 Seconds (Deliberate)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>AVATAR (optional)</label>
+        <input type="file" id="avatar-upload" accept="image/png,image/jpeg,image/webp"
+          style="width:100%;background:rgba(0,0,0,0.5);border:1px solid rgba(201,168,76,0.2);border-radius:4px;padding:0.5rem;color:var(--text-light);cursor:pointer;" />
+        <div class="key-hint">PNG, JPG or WEBP · Square recommended</div>
+        <div id="avatar-preview" style="display:none;margin-top:0.5rem;text-align:center;">
+          <img id="avatar-preview-img" style="width:60px;height:60px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;" />
+          <span id="avatar-preview-ok" style="color:#4ade80;font-size:0.8rem;margin-left:0.5rem;">✓ Image accepted</span>
+        </div>
+        <div id="avatar-error" style="display:none;color:#ff6666;font-size:0.8rem;margin-top:0.3rem;"></div>
+      </div>
+
+      <button class="btn-primary" id="start-btn" data-ui-sound="enterVillage" onclick="startGame(false)">
+        <span class="btn-spinner"></span>
+        ENTER THE VILLAGE
+      </button>
+    </div>
+
+    <!-- ── Screen 2b: SPECTATE form ─────────────────────────────────────── -->
+    <div class="form-card" id="spectate-form-card" style="display:none">
+      <button class="back-btn" data-ui-sound="menuSelect" onclick="chooseMode(null)">← BACK</button>
+      <div class="form-card-title">WATCH AS SPECTATOR</div>
+      <div class="form-card-sub">All players are AI — you watch and see everything</div>
+
+      <div class="api-error-banner" id="api-error-banner-spec"></div>
+
+      <div class="form-group">
+        <label>API KEY</label>
+        <input type="password" id="api-key-input-spec" placeholder="Your Commonstack API key..." autocomplete="off" />
+        <div class="key-hint">Get your key at <a href="https://commonstack.ai" target="_blank" style="color:var(--gold)">commonstack.ai</a></div>
+      </div>
+      <div class="form-group">
+        <label>NUMBER OF AI PLAYERS</label>
+        <select id="player-count-select-spec" onchange="updatePlayerCountHint(true); updateMafiaCount(document.getElementById('mafia-count-slider-spec').value, true)">
+          <option value="4">4 AI Players</option>
+          <option value="5">5 AI Players</option>
+          <option value="6" selected>6 AI Players</option>
+          <option value="7">7 AI Players</option>
+          <option value="8">8 AI Players</option>
+          <option value="10">10 AI Players</option>
+          <option value="12">12 AI Players</option>
+          <option value="15">15 AI Players</option>
+        </select>
+        <div class="key-hint" id="player-count-hint-spec">All slots are AI models. You watch everything including hidden roles.</div>
+      </div>
+      <div class="form-group">
+        <label>NUMBER OF MAFIA <span id="mafia-count-display-spec" style="color:var(--gold)">2</span></label>
+        <input type="range" id="mafia-count-slider-spec" min="1" max="8" value="2"
+          style="width:100%;accent-color:var(--mafia-red);cursor:pointer;"
+          oninput="updateMafiaCount(this.value, true)" />
+        <div class="key-hint">Sheriff × 1 and Doctor × 1 are always in. Rest are Villagers.</div>
+        <div id="mafia-balance-warn-spec" style="display:none;margin-top:6px;padding:7px 10px;border-radius:5px;background:rgba(220,38,38,0.13);border:1px solid rgba(220,38,38,0.45);color:#fca5a5;font-size:0.75rem;line-height:1.5;"></div>
+      </div>
+      <div class="form-group">
+        <label>SPEAKING TIME Per Turn</label>
+        <select id="speak-time-select-spec">
+          <option value="15">15 Seconds (Fast)</option>
+          <option value="30" selected>30 Seconds (Standard)</option>
+          <option value="60">60 Seconds (Deliberate)</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" id="spectate-btn" data-ui-sound="enterVillage" onclick="startGame(true)">
+        <span class="btn-spinner"></span>
+        WATCH THE GAME
+      </button>
+    </div>
+  </section>
+
+  <!-- HOW TO PLAY -->
+  <section class="info-section" id="how-section">
+    <div class="section-title">HOW TO PLAY</div>
+    <div class="section-sub">A classic game of deception, now with real AI opponents</div>
+    <div class="step-cards">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-title">ROLES ARE ASSIGNED</div>
+        <div class="step-desc">Each player gets a secret role - Villager, Sheriff, or Mafia. Only the Mafia know each other.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-title">DAY PHASE - SPEAK</div>
+        <div class="step-desc">All players speak in turn. Argue, accuse, defend. Real AI models form their own strategies.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-title">VOTE TO ELIMINATE</div>
+        <div class="step-desc">The village votes to eliminate one suspect. Choose wisely - your vote could doom an innocent. You can also abstain.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-title">NIGHT PHASE</div>
+        <div class="step-desc">Mafia meet secretly to discuss and choose their kill target. The Sheriff can investigate or shoot. The Doctor protects one player. If you're eliminated, you spectate.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">05</div>
+        <div class="step-title">WIN CONDITIONS</div>
+        <div class="step-desc">Town wins when all Mafia are eliminated. Mafia wins when they equal or outnumber the Town. You can customise the number of Mafia in the settings.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="info-section">
+    <div class="section-title">THE ROLES</div>
+    <div class="section-sub">Hover to reveal each role's secret power</div>
+    <div class="role-cards">
+      <div class="role-card">
+        <div class="role-card-inner">
+          <div class="role-front">
+            <div class="role-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="11" y="2" width="2" height="4" fill="#7a5a3a"/><rect x="11" y="1" width="2" height="1" fill="#5a4020"/><rect x="7" y="3" width="2" height="1" fill="#c87040"/><rect x="5" y="4" width="6" height="1" fill="#c87040"/><rect x="3" y="5" width="10" height="1" fill="#b86030"/><rect x="2" y="6" width="12" height="1" fill="#a85020"/><rect x="2" y="7" width="12" height="1" fill="#c87040"/><rect x="2" y="8" width="12" height="6" fill="#d4a97a"/><rect x="3" y="9" width="10" height="4" fill="#e0ba8a"/><rect x="6" y="10" width="4" height="4" fill="#3a2010"/><rect x="7" y="11" width="2" height="3" fill="#5a3820"/><rect x="3" y="10" width="2" height="2" fill="#aaccff"/><rect x="3" y="10" width="1" height="1" fill="#88aaee"/><rect x="11" y="10" width="2" height="2" fill="#aaccff"/><rect x="12" y="10" width="1" height="1" fill="#88aaee"/><rect x="1" y="14" width="14" height="1" fill="#5a8a3a"/><rect x="1" y="15" width="14" height="1" fill="#3a6a20"/></svg></div>
+            <div class="role-name">VILLAGER</div>
+          </div>
+          <div class="role-back">
+            <div class="role-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="11" y="2" width="2" height="4" fill="#7a5a3a"/><rect x="11" y="1" width="2" height="1" fill="#5a4020"/><rect x="7" y="3" width="2" height="1" fill="#c87040"/><rect x="5" y="4" width="6" height="1" fill="#c87040"/><rect x="3" y="5" width="10" height="1" fill="#b86030"/><rect x="2" y="6" width="12" height="1" fill="#a85020"/><rect x="2" y="7" width="12" height="1" fill="#c87040"/><rect x="2" y="8" width="12" height="6" fill="#d4a97a"/><rect x="3" y="9" width="10" height="4" fill="#e0ba8a"/><rect x="6" y="10" width="4" height="4" fill="#3a2010"/><rect x="7" y="11" width="2" height="3" fill="#5a3820"/><rect x="3" y="10" width="2" height="2" fill="#aaccff"/><rect x="3" y="10" width="1" height="1" fill="#88aaee"/><rect x="11" y="10" width="2" height="2" fill="#aaccff"/><rect x="12" y="10" width="1" height="1" fill="#88aaee"/><rect x="1" y="14" width="14" height="1" fill="#5a8a3a"/><rect x="1" y="15" width="14" height="1" fill="#3a6a20"/></svg></div>
+            <p>You are an innocent townsfolk. Use logic, observation, and persuasion to identify the Mafia. You have no special powers - only your voice.</p>
+          </div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-card-inner">
+          <div class="role-front">
+            <div class="role-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="7" y="1" width="2" height="2" fill="#f59e0b"/><rect x="10" y="3" width="2" height="2" fill="#f59e0b"/><rect x="12" y="6" width="2" height="2" fill="#f59e0b"/><rect x="10" y="10" width="2" height="2" fill="#f59e0b"/><rect x="4" y="10" width="2" height="2" fill="#f59e0b"/><rect x="2" y="6" width="2" height="2" fill="#f59e0b"/><rect x="4" y="3" width="2" height="2" fill="#f59e0b"/><rect x="5" y="3" width="6" height="10" fill="#fbbf24"/><rect x="3" y="5" width="10" height="6" fill="#fbbf24"/><rect x="4" y="4" width="8" height="8" fill="#fcd34d"/><rect x="6" y="6" width="4" height="4" fill="#d97706"/><rect x="7" y="7" width="2" height="2" fill="#fef3c7"/><rect x="7" y="2" width="2" height="1" fill="#92400e"/><rect x="6" y="3" width="4" height="1" fill="#92400e"/><rect x="5" y="12" width="6" height="1" fill="#92400e"/></svg></div><!--sheriff_icon-->
+            <div class="role-name">SHERIFF</div>
+          </div>
+          <div class="role-back">
+            <div class="role-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="7" y="1" width="2" height="2" fill="#f59e0b"/><rect x="10" y="3" width="2" height="2" fill="#f59e0b"/><rect x="12" y="6" width="2" height="2" fill="#f59e0b"/><rect x="10" y="10" width="2" height="2" fill="#f59e0b"/><rect x="4" y="10" width="2" height="2" fill="#f59e0b"/><rect x="2" y="6" width="2" height="2" fill="#f59e0b"/><rect x="4" y="3" width="2" height="2" fill="#f59e0b"/><rect x="5" y="3" width="6" height="10" fill="#fbbf24"/><rect x="3" y="5" width="10" height="6" fill="#fbbf24"/><rect x="4" y="4" width="8" height="8" fill="#fcd34d"/><rect x="6" y="6" width="4" height="4" fill="#d97706"/><rect x="7" y="7" width="2" height="2" fill="#fef3c7"/><rect x="7" y="2" width="2" height="1" fill="#92400e"/><rect x="6" y="3" width="4" height="1" fill="#92400e"/><rect x="5" y="12" width="6" height="1" fill="#92400e"/></svg></div><!--sheriff_icon-->
+            <p>You are the law. Each night, investigate one player to learn their alignment. Once per game, attempt a Kill Shot - but if you're wrong, you both die.</p>
+          </div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-card-inner">
+          <div class="role-front">
+            <div class="role-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="1" y="7" width="2" height="2" fill="#888"/><rect x="3" y="6" width="1" height="4" fill="#aaa"/><rect x="1" y="6" width="3" height="1" fill="#777"/><rect x="1" y="9" width="3" height="1" fill="#777"/><rect x="4" y="5" width="7" height="6" fill="#1a1a1a"/><rect x="5" y="6" width="5" height="4" fill="#c8e8f8"/><rect x="7" y="6" width="3" height="4" fill="#3b82f6"/><rect x="5" y="8" width="2" height="2" fill="#60a5fa"/><rect x="4" y="5" width="7" height="1" fill="#555"/><rect x="4" y="10" width="7" height="1" fill="#555"/><rect x="6" y="6" width="1" height="1" fill="#1e3a8a"/><rect x="8" y="6" width="1" height="1" fill="#1e3a8a"/><rect x="10" y="6" width="1" height="1" fill="#1e3a8a"/><rect x="11" y="6" width="2" height="4" fill="#6b7280"/><rect x="11" y="7" width="2" height="2" fill="#9ca3af"/><rect x="13" y="7" width="3" height="2" fill="#d1d5db"/><rect x="15" y="7" width="1" height="2" fill="#f3f4f6"/></svg></div><!--doctor_icon-->
+            <div class="role-name">DOCTOR</div>
+          </div>
+          <div class="role-back">
+            <div class="role-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="1" y="7" width="2" height="2" fill="#888"/><rect x="3" y="6" width="1" height="4" fill="#aaa"/><rect x="1" y="6" width="3" height="1" fill="#777"/><rect x="1" y="9" width="3" height="1" fill="#777"/><rect x="4" y="5" width="7" height="6" fill="#1a1a1a"/><rect x="5" y="6" width="5" height="4" fill="#c8e8f8"/><rect x="7" y="6" width="3" height="4" fill="#3b82f6"/><rect x="5" y="8" width="2" height="2" fill="#60a5fa"/><rect x="4" y="5" width="7" height="1" fill="#555"/><rect x="4" y="10" width="7" height="1" fill="#555"/><rect x="6" y="6" width="1" height="1" fill="#1e3a8a"/><rect x="8" y="6" width="1" height="1" fill="#1e3a8a"/><rect x="10" y="6" width="1" height="1" fill="#1e3a8a"/><rect x="11" y="6" width="2" height="4" fill="#6b7280"/><rect x="11" y="7" width="2" height="2" fill="#9ca3af"/><rect x="13" y="7" width="3" height="2" fill="#d1d5db"/><rect x="15" y="7" width="1" height="2" fill="#f3f4f6"/></svg></div><!--doctor_icon-->
+            <p>You are the village healer. Each night, choose one player to protect. If Mafia targets them, they survive. Never reveal your role - Mafia will hunt you.</p>
+          </div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-card-inner">
+          <div class="role-front">
+            <div class="role-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="7" y="1" width="2" height="1" fill="#1a1a1a"/><rect x="6" y="2" width="2" height="1" fill="#c8c8d0"/><rect x="5" y="3" width="2" height="1" fill="#d4d4dc"/><rect x="4" y="4" width="2" height="1" fill="#c8c8d0"/><rect x="3" y="5" width="2" height="1" fill="#b0b0b8"/><rect x="7" y="2" width="1" height="1" fill="#f0f0f8"/><rect x="6" y="3" width="1" height="1" fill="#e8e8f0"/><rect x="5" y="4" width="1" height="1" fill="#e0e0e8"/><rect x="2" y="6" width="4" height="1" fill="#2a1a0a"/><rect x="2" y="5" width="1" height="2" fill="#3a2a10"/><rect x="5" y="5" width="1" height="2" fill="#3a2a10"/><rect x="2" y="7" width="3" height="4" fill="#1e1008"/><rect x="3" y="8" width="1" height="2" fill="#2e1a10"/><rect x="2" y="11" width="3" height="2" fill="#3a2a10"/><rect x="3" y="12" width="1" height="1" fill="#4a3a18"/><rect x="9" y="3" width="2" height="1" fill="#cc0000"/><rect x="9" y="4" width="3" height="2" fill="#aa0000"/><rect x="10" y="6" width="2" height="1" fill="#880000"/><rect x="10" y="7" width="1" height="1" fill="#660000"/></svg></div><!--mafia_icon-->
+            <div class="role-name">MAFIA</div>
+          </div>
+          <div class="role-back">
+            <div class="role-icon" style="font-size:0"><svg width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="7" y="1" width="2" height="1" fill="#1a1a1a"/><rect x="6" y="2" width="2" height="1" fill="#c8c8d0"/><rect x="5" y="3" width="2" height="1" fill="#d4d4dc"/><rect x="4" y="4" width="2" height="1" fill="#c8c8d0"/><rect x="3" y="5" width="2" height="1" fill="#b0b0b8"/><rect x="7" y="2" width="1" height="1" fill="#f0f0f8"/><rect x="6" y="3" width="1" height="1" fill="#e8e8f0"/><rect x="5" y="4" width="1" height="1" fill="#e0e0e8"/><rect x="2" y="6" width="4" height="1" fill="#2a1a0a"/><rect x="2" y="5" width="1" height="2" fill="#3a2a10"/><rect x="5" y="5" width="1" height="2" fill="#3a2a10"/><rect x="2" y="7" width="3" height="4" fill="#1e1008"/><rect x="3" y="8" width="1" height="2" fill="#2e1a10"/><rect x="2" y="11" width="3" height="2" fill="#3a2a10"/><rect x="3" y="12" width="1" height="1" fill="#4a3a18"/><rect x="9" y="3" width="2" height="1" fill="#cc0000"/><rect x="9" y="4" width="3" height="2" fill="#aa0000"/><rect x="10" y="6" width="2" height="1" fill="#880000"/><rect x="10" y="7" width="1" height="1" fill="#660000"/></svg></div><!--mafia_icon-->
+            <p>You are the hidden enemy. By day, blend in and deflect suspicion. By night, meet secretly with your partners, discuss your target, then strike. Win when you match Town numbers.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>Powered by <a href="https://commonstack.ai" target="_blank">Commonstack AI</a> - The AI API Hub</p>
+    <p style="margin-top:0.3rem;font-size:0.75rem">AI MAFIA • A browser-based 3D AI showdown experience</p>
+  </footer>
+</div>
+
+<!-- GAME UI (hidden until game starts) -->
+<div id="game-ui">
+
+  <!-- Spectator night location switcher -->
+    <!-- Subtitle bar -->
+  <div id="subtitle-bar">
+    <div id="subtitle-speaker"></div>
+    <div id="subtitle-text"></div>
+  </div>
+  <!-- Night thought panel -->
+  <div id="thought-panel">
+    <div id="thought-panel-header">
+      <div id="thought-panel-icon">&#x1F4AD;</div>
+      <div id="thought-panel-name"></div>
+      <div id="thought-panel-role"></div>
+    </div>
+    <div id="thought-thinking"></div>
+    <hr class="thought-divider">
+    <div id="thought-answer"></div>
+  </div>
+  <div id="spectator-night-switcher" style="display:none;position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(5,5,8,0.96);border:1px solid rgba(156,163,175,0.25);border-radius:12px;padding:0.7rem 1rem;min-width:380px;max-width:92vw;backdrop-filter:blur(10px)"></div>
+
+  <!-- Spectate Banner - shown when human is eliminated -->
+  <div id="spectate-banner" style="display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:50;background:rgba(0,0,0,0.88);border:1px solid rgba(156,163,175,0.5);border-radius:8px;padding:0.6rem 1.4rem;font-family:'Cinzel',serif;font-size:0.78rem;letter-spacing:0.12em;color:#9ca3af;pointer-events:none;align-items:center;gap:0.6rem;text-align:center;transition:opacity 1.5s ease;">
+    SPECTATING — You can see all roles · <span style="color:#fcd34d">WASD</span> to roam · <span style="color:#fcd34d">R</span> to toggle cinematic/free cam
+  </div>
+
+  <!-- Top HUD -->
+  <div id="top-hud">
+    <div id="phase-badge">DAY 1</div>
+
+    <div id="role-badge">VILLAGER</div>
+    <div id="token-counter">Tokens: 0</div>
+    <div id="hud-btns">
+      <button class="hud-btn" id="mute-btn" onclick="toggleMute()" title="Toggle sound">
+        <svg width="14" height="14" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;vertical-align:middle">
+          <rect x="1" y="3" width="2" height="2" fill="currentColor"/>
+          <polygon points="3,2 6,0 6,8 3,6" fill="currentColor"/>
+          <rect x="7" y="2" width="1" height="1" fill="currentColor"/>
+          <rect x="7" y="5" width="1" height="1" fill="currentColor"/>
+        </svg>
+      </button>
+      <button class="hud-btn" id="chat-toggle-btn" onclick="toggleChatLog()" title="Toggle chat log">
+        <svg width="14" height="14" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;vertical-align:middle">
+          <rect x="1" y="1" width="6" height="5" fill="none" stroke="currentColor" stroke-width="1"/>
+          <rect x="2" y="3" width="4" height="1" fill="currentColor"/>
+          <rect x="2" y="2" width="2" height="1" fill="currentColor"/>
+          <polygon points="2,6 2,8 4,6" fill="currentColor"/>
+        </svg>
+      </button>
+      <button class="hud-btn" id="spectator-toggle-btn" onclick="confirmIngameSpectate()" title="Watch as spectator (WARNING: cannot return)" style="font-size:0.85rem">
+        <svg width="14" height="14" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;vertical-align:middle">
+          <path d="M1 4 Q4 1 7 4 Q4 7 1 4Z" fill="none" stroke="currentColor" stroke-width="1"/>
+          <circle cx="4" cy="4" r="1.5" fill="currentColor"/>
+          <circle cx="4" cy="4" r="0.5" fill="var(--dark-bg,#0a0806)"/>
+        </svg>
+      </button>
+      <button class="hud-btn" data-ui-sound="menuSelect" onclick="showTutorial()">?</button>
+      <button class="hud-btn" onclick="exitToLobby()">×</button>
+    </div>
+  </div>
+
+  <!-- Chat log -->
+  <!-- Hidden chat log data store (still written to by HUD.addChat) -->
+  <div id="chat-log"></div>
+
+  <!-- Chat log popup (shown on 💬 click) -->
+  <div id="chat-log-popup">
+    <div id="chat-log-popup-header">CHAT LOG</div>
+  </div>
+
+  <!-- Live activity feed (always visible bottom-left) -->
+  <div id="activity-feed"></div>
+
+  <!-- Player list -->
+  <div id="player-list">
+    <div id="player-list-title">PLAYERS</div>
+    <div id="player-list-items"></div>
+  </div>
+
+  <!-- Timer overlay -->
+  <div id="timer-overlay">
+    <canvas id="timer-canvas" width="120" height="120"></canvas>
+    <div id="timer-speaker-name"></div>
+  </div>
+
+  <!-- Speak input panel -->
+  <div id="speak-input-panel">
+    <div id="speak-input-label">YOUR TURN - SPEAK YOUR MIND</div>
+    <div id="speak-input-row">
+      <input type="text" id="speak-input" placeholder="What do you say to the village?" maxlength="300" />
+      <button class="speak-btn" onclick="submitSpeech()">SPEAK</button>
+      <button class="speak-btn secondary" onclick="passTurn()">PASS</button>
+    </div>
+  </div>
+
+  <!-- Vote panel -->
+  <div id="vote-panel">
+    <div id="vote-panel-title">
+      <svg width="13" height="13" viewBox="0 0 8 8" fill="none" style="image-rendering:pixelated;vertical-align:middle;margin-right:5px"><rect x="1" y="3" width="6" height="2" fill="#fcd34d"/><rect x="3" y="1" width="2" height="6" fill="#fcd34d"/></svg>
+      VOTE TO ELIMINATE
+    </div>
+    <div class="vote-targets" id="vote-targets"></div>
+    <div class="vote-tally" id="vote-tally"></div>
+  </div>
+
+  <!-- Night panel -->
+  <div id="night-panel">
+    <div id="night-panel-header" onclick="(function(){
+      const p=document.getElementById('night-panel');
+      p.classList.toggle('minimized');
+      const btn=document.getElementById('night-panel-toggle');
+      const mini=p.classList.contains('minimized');
+      btn.textContent=mini?'⬆':'⬇';
+    })()">
+      <div id="night-panel-title" style="flex:1;margin:0;text-align:left;font-size:0.9rem">NIGHT FALLS</div>
+      <div id="night-panel-sub" style="margin:0;font-size:0.75rem;opacity:0.7"></div>
+      <div id="night-panel-toggle" style="font-size:0.8rem;color:rgba(180,150,255,0.7);margin-left:0.5rem;padding:0 0.3rem">⬇</div>
+    </div>
+    <div id="night-panel-body">
+      <div id="night-panel-content"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Full-screen overlays -->
+<div id="credit-overlay">
+  <h2>⚠️ API Credits Exhausted</h2>
+  <p>Your Commonstack API key has run out of credits. The game has been paused.<br><br>
+  Please recharge your account at <a href="https://commonstack.ai/billing" target="_blank">commonstack.ai/billing</a> to continue playing.</p>
+  <button class="continue-btn" onclick="dismissCreditOverlay()">DISMISS & RETURN TO LOBBY</button>
+</div>
+
+<div id="game-over-overlay">
+  <div id="game-over-title"></div>
+  <div id="game-over-sub"></div>
+  <button class="game-over-btn" onclick="exitToLobby()">PLAY AGAIN</button>
+</div>
+
+<div id="connection-overlay">Connection lost - reconnecting...</div>
+
+<div id="investigation-result">
+  <h3>INVESTIGATION RESULT</h3>
+  <div class="result-icon" id="inv-result-icon"></div>
+  <div class="result-text" id="inv-result-text"></div>
+  <button onclick="document.getElementById('investigation-result').classList.remove('visible')">UNDERSTOOD</button>
+</div>
+
+<div id="tutorial-overlay"></div>
+
+<!-- Tutorial is now handled entirely by Tutorial.js + main.js (tutorial.showIfFirstTime).
+     The IIFE below is kept as a minimal stub so any lingering HTML onclick="window._tutSkip()"
+     references don't throw, and so stale localStorage keys from previous broken fixes are cleared. -->
+<script>
+(function () {
+  'use strict';
+  // ── Neutralise the old IIFE path completely ─────────────────────────────
+  // main.js now calls tutorial.showIfFirstTime() directly after loading.
+  // Setting this to a no-op prevents the old window._showTutorialAfterLoad
+  // call-chain from accidentally launching a second, conflicting tutorial.
+  window._showTutorialAfterLoad = function () { /* no-op — handled by Tutorial.js */ };
+
+  // Tutorial storage cleanup now lives in Tutorial.js so the startup path has a
+  // single source of truth for both local dev and production.
+
+  // ── Stub controls (onclick attributes in legacy HTML may call these) ─────
+  window._tutSkip = window._tutNext = window._tutPrev = function () {};
+})();
+</script>
+
+<!-- Main script -->
+<script type="module" src="/src/main.js"></script>
+<script>
+  // Global helpers accessible from HTML attributes
+  let _gameInstance = null;
+  let _avatarTexture = null; // holds validated THREE.CanvasTexture for human head
+
+  function selectTier(tier) {
+    document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
+    document.querySelector(`[data-tier="${tier}"]`).classList.add('selected');
+  }
+
+  // ── Mafia balance helper ──────────────────────────────────────────────────
+  // Town (non-mafia) must always strictly outnumber Mafia.
+  // Max safe mafia = floor((playerCount - 1) / 2)
+  function maxSafeMafia(playerCount) {
+    return Math.max(1, Math.floor((playerCount - 1) / 2));
+  }
+
+  function updateMafiaCount(val, isSpec) {
+    const spec = Boolean(isSpec);
+    const slider  = document.getElementById(spec ? 'mafia-count-slider-spec'  : 'mafia-count-slider');
+    const display = document.getElementById(spec ? 'mafia-count-display-spec' : 'mafia-count-display');
+    const warn    = document.getElementById(spec ? 'mafia-balance-warn-spec'  : 'mafia-balance-warn');
+    const pSelect = document.getElementById(spec ? 'player-count-select-spec' : 'player-count-select');
+    if (!slider || !display || !pSelect) return;
+
+    const playerCount = parseInt(pSelect.value);
+    const maxMafia    = maxSafeMafia(playerCount);
+    const townMin     = playerCount - maxMafia; // minimum town size at max mafia
+
+    // Clamp slider max so it's impossible to drag past the safe limit
+    slider.max = maxMafia;
+
+    let mafiaCount = parseInt(val);
+    if (mafiaCount > maxMafia) {
+      mafiaCount = maxMafia;
+      slider.value = maxMafia;
+    }
+
+    display.textContent = mafiaCount;
+
+    // Show/hide inline warning
+    if (warn) {
+      if (mafiaCount >= playerCount - mafiaCount) {
+        // Should never happen after clamping, but belt-and-suspenders
+        warn.style.display = 'block';
+        warn.innerHTML = `⚠ Mafia would equal or outnumber Town. Reduce Mafia to <strong>${maxMafia}</strong> or increase total players.`;
+      } else {
+        warn.style.display = 'none';
+        warn.textContent   = '';
+      }
+    }
+  }
+
+  // Live avatar validation + preview
+  document.addEventListener('DOMContentLoaded', () => {
+    const avatarInput = document.getElementById('avatar-upload');
+    if (avatarInput) {
+      avatarInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        const errEl = document.getElementById('avatar-error');
+        const previewEl = document.getElementById('avatar-preview');
+        const previewImg = document.getElementById('avatar-preview-img');
+        _avatarTexture = null;
+        errEl.style.display = 'none';
+        previewEl.style.display = 'none';
+        if (!file) return;
+
+        const allowed = ['image/png','image/jpeg','image/webp'];
+        if (!allowed.includes(file.type)) {
+          errEl.textContent = '⚠️ Only PNG, JPG, or WEBP images accepted.';
+          errEl.style.display = 'block'; return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          errEl.textContent = '⚠️ Image must be under 5MB.';
+          errEl.style.display = 'block'; return;
+        }
+
+        // Check dimensions before importing Three.js texture
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = async () => {
+          URL.revokeObjectURL(url);
+          if (img.width < 64 || img.height < 64) {
+            errEl.textContent = '⚠️ Image must be at least 64×64 pixels.';
+            errEl.style.display = 'block'; return;
+          }
+          if (img.width > 2048 || img.height > 2048) {
+            errEl.textContent = '⚠️ Image must be 2048×2048 or smaller.';
+            errEl.style.display = 'block'; return;
+          }
+
+          // Draw onto canvas (square crop from centre)
+          const canvas = document.createElement('canvas');
+          canvas.width = 128; canvas.height = 128;
+          const ctx = canvas.getContext('2d');
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 128, 128);
+
+          // Store as data URL for preview
+          previewImg.src = canvas.toDataURL();
+          previewEl.style.display = 'block';
+
+          // Build THREE.CanvasTexture (THREE is loaded by the time user uploads)
+          if (window.THREE) {
+            _avatarTexture = new window.THREE.CanvasTexture(canvas);
+            _avatarTexture.needsUpdate = true;
+          } else {
+            // Store canvas ref, engine will build texture from it
+            _avatarTexture = { canvas };
+          }
+        };
+        img.onerror = () => {
+          errEl.textContent = '⚠️ Could not read image file.';
+          errEl.style.display = 'block';
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    }
+  });
+
+  // ── Mode selection ──────────────────────────────────────────────────────
+  function playUiSound(name) {
+    const soundEngine = window._soundEngine || window._gameInstance?.soundEngine;
+    if (!soundEngine) return;
+    if (typeof soundEngine.playUi === 'function') {
+      soundEngine.playUi(name);
+      return;
+    }
+    soundEngine.play?.(name);
+  }
+
+  document.addEventListener('pointerdown', (event) => {
+    const trigger = event.target.closest?.('[data-ui-sound]');
+    if (!trigger) return;
+    const soundName = trigger.dataset.uiSound;
+    if (soundName) playUiSound(soundName);
+  }, true);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.repeat) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const trigger = event.target.closest?.('[data-ui-sound]');
+    if (!trigger) return;
+    const soundName = trigger.dataset.uiSound;
+    if (soundName) playUiSound(soundName);
+  }, true);
+
+  function chooseMode(mode) {
+    document.getElementById('mode-select-card').style.display  = mode ? 'none' : 'block';
+    document.getElementById('play-form-card').style.display    = mode === 'play'    ? 'block' : 'none';
+    document.getElementById('spectate-form-card').style.display = mode === 'spectate' ? 'block' : 'none';
+    // scroll to form
+    if (mode) document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function updatePlayerCountHint(isSpec) {
+    if (!isSpec) {
+      const n = parseInt(document.getElementById('player-count-select').value);
+      document.getElementById('player-count-hint-play').textContent =
+        `You take 1 slot. ${n-1} AI opponent${n-1!==1?'s':''} will fill the rest.`;
+    } else {
+      const n = parseInt(document.getElementById('player-count-select-spec').value);
+      document.getElementById('player-count-hint-spec').textContent =
+        `${n} AI models will play. You watch everything including hidden roles.`;
+    }
+  }
+
+  function selectTier(tier, ctx) {
+    const container = ctx === 'spec'
+      ? document.getElementById('tier-cards-spec')
+      : document.querySelector('.tier-cards');
+    if (!container) return;
+    container.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
+    container.querySelector(`[data-tier="${tier}"]`)?.classList.add('selected');
+  }
+
+    async function startGame(asSpectator = false) {
+    const btn = document.getElementById(asSpectator ? 'spectate-btn' : 'start-btn');
+    const otherBtn = null;
+    if (!btn) { console.error('startGame: button not found'); return; }
+
+    // Read from the correct form based on mode
+    const key = asSpectator
+      ? document.getElementById('api-key-input-spec').value.trim()
+      : document.getElementById('api-key-input').value.trim();
+    const playerName = asSpectator ? 'Spectator'
+      : (document.getElementById('player-name-input').value.trim() || 'You');
+    const playerCount = asSpectator
+      ? parseInt(document.getElementById('player-count-select-spec').value)
+      : parseInt(document.getElementById('player-count-select').value);
+    const speakTime = asSpectator
+      ? parseInt(document.getElementById('speak-time-select-spec').value)
+      : parseInt(document.getElementById('speak-time-select').value);
+    const tier = asSpectator
+      ? (document.getElementById('tier-cards-spec')?.querySelector('.tier-card.selected')?.dataset.tier || 'mid')
+      : (document.querySelector('.tier-cards')?.querySelector('.tier-card.selected')?.dataset.tier || 'mid');
+    const mafiaCount = asSpectator
+      ? parseInt(document.getElementById('mafia-count-slider-spec')?.value || '2')
+      : parseInt(document.getElementById('mafia-count-slider')?.value || '2');
+    const errorBanner = document.getElementById(asSpectator ? 'api-error-banner-spec' : 'api-error-banner');
+
+    errorBanner.classList.remove('visible');
+
+    // ── Mafia balance guard ─────────────────────────────────────────────────
+    {
+      const maxM = maxSafeMafia(playerCount);
+      if (mafiaCount > maxM) {
+        const townCount = playerCount - mafiaCount;
+        errorBanner.innerHTML =
+          `⚠️ <strong>Invalid setup:</strong> ${mafiaCount} Mafia would equal or outnumber ` +
+          `Town (${townCount} players). ` +
+          `With <strong>${playerCount} total players</strong>, you can have at most ` +
+          `<strong>${maxM} Mafia</strong> so Town always has the majority. ` +
+          `Please reduce Mafia to ${maxM} or increase total players to at least <strong>${mafiaCount * 2 + 1}</strong>.`;
+        errorBanner.classList.add('visible');
+        return;
+      }
+    }
+
+    if (!key || key.trim().length < 8) {
+      errorBanner.innerHTML = '⚠️ Please enter your Commonstack API key.';
+      errorBanner.classList.add('visible');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    if (otherBtn) otherBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/validate-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: key }),
+      });
+      const data = await res.json();
+
+      if (!data.valid) {
+        if (data.error === 'INSUFFICIENT_CREDITS') {
+          errorBanner.innerHTML = '⚠️ Your Commonstack API key has insufficient credits. Please recharge at <a href="https://commonstack.ai/billing" target="_blank" style="color:var(--gold)">commonstack.ai/billing</a>';
+        } else {
+          errorBanner.innerHTML = `⚠️ ${data.error}`;
+        }
+        errorBanner.classList.add('visible');
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Launch game with all config
+      if (window._gameInstance) {
+        window._gameInstance.launch({
+          apiKey: key,
+          playerName,
+          playerCount,
+          speakTime,
+          tier,
+          mafiaCount,
+          customHeadTexture: _avatarTexture,
+          startAsSpectator: asSpectator,
+        });
+        // BUG FIX: buttons were never re-enabled on success — user couldn't retry after leaving lobby
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    } catch (e) {
+      errorBanner.innerHTML = '⚠️ Cannot reach the server. Make sure you ran <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px">node server.js</code> in your terminal first, then refresh this page.';
+      errorBanner.classList.add('visible');
+      btn.disabled = false;
+      btn.classList.remove('loading');
+    }
+  }
+
+  function toggleSpectatorView() {
+    if (window._gameInstance) window._gameInstance.toggleSpectatorView();
+  }
+  function toggleMute() {
+    if (window._gameInstance) window._gameInstance.toggleMute();
+  }
+  function submitSpeech() {
+    const input = document.getElementById('speak-input');
+    if (window._gameInstance) window._gameInstance.humanSpeech(input.value);
+    input.value = '';
+  }
+  function passTurn() {
+    if (window._gameInstance) window._gameInstance.humanPass();
+  }
+  function exitToLobby() {
+    if (window._gameInstance) window._gameInstance.exitToLobby();
+  }
+  function showTutorial() {
+    if (window._gameInstance) window._gameInstance.showTutorial();
+    else window._tutorial?.show(null);
+  }
+  function dismissCreditOverlay() {
+    document.getElementById('credit-overlay').classList.remove('visible');
+    exitToLobby();
+  }
+  document.getElementById('speak-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitSpeech();
+  });
+</script>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SPECTATOR MODE HUD OVERLAYS — Turing Games Style
+       ══════════════════════════════════════════════════════════════ -->
+
+  <!-- Left player sidebar -->
+  <div id="spec-sidebar"></div>
+
+  <!-- Top announcer -->
+  <div id="spec-announcer">
+    <div id="spec-announcer-phase"></div>
+    <div id="spec-announcer-event"></div>
+  </div>
+
+  <!-- Kill/elimination dramatic overlay -->
+  <div id="spec-kill-overlay">
+    <div id="spec-kill-name"></div>
+    <div id="spec-kill-role"></div>
+  </div>
+
+  <!-- Bottom speaker lower-third -->
+  <div id="spec-lower-third">
+    <div id="spec-lower-speaker"></div>
+    <div id="spec-lower-text"></div>
+  </div>
+
+  <!-- Bottom thinking bar — sits right of lower-third -->
+  <div id="spec-cot-bar" style="display:none">
+    <div id="spec-cot-bar-header">THINKING</div>
+    <div id="spec-cot-bar-text">…</div>
+  </div>
+
+  <!-- Right vote tracker -->
+  <div id="spec-vote-tracker">
+    <div id="spec-vote-header">⚖ LIVE VOTE</div>
+  </div>
+
+  <!-- Right event feed -->
+  <div id="spec-event-feed"></div>
+
+
+  <!-- Spectator Warning Modals -->
+  <div id="spec-warn-lobby"  class="spec-warning-modal" style="display:none">
+    <div class="spec-warning-box">
+      <div class="spec-warning-icon" style="font-size:0"><svg width="40" height="40" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="2" y="5" width="2" height="1" fill="#9ca3af"/><rect x="4" y="4" width="8" height="1" fill="#9ca3af"/><rect x="12" y="5" width="2" height="1" fill="#9ca3af"/><rect x="1" y="6" width="14" height="4" fill="#f9fafb"/><rect x="2" y="5" width="12" height="5" fill="#f9fafb"/><rect x="5" y="6" width="6" height="4" fill="#3b82f6"/><rect x="6" y="5" width="4" height="5" fill="#3b82f6"/><rect x="6" y="7" width="4" height="2" fill="#1d4ed8"/><rect x="7" y="6" width="2" height="4" fill="#1d4ed8"/><rect x="7" y="7" width="2" height="2" fill="#1a1a1a"/><rect x="7" y="6" width="1" height="1" fill="#bfdbfe"/><rect x="2" y="10" width="2" height="1" fill="#9ca3af"/><rect x="4" y="11" width="8" height="1" fill="#9ca3af"/><rect x="12" y="10" width="2" height="1" fill="#9ca3af"/></svg></div>
+      <div class="spec-warning-title">SPECTATOR MODE</div>
+      <div class="spec-warning-body">
+        You will watch the game as a <strong>silent observer</strong>.<br><br>
+        You will <strong>not participate</strong> — no speaking, no voting, no role.<br>
+        You will see <strong>all roles and hidden actions</strong> in real time.
+      </div>
+      <div class="spec-warning-actions">
+        <button class="spec-warning-cancel" onclick="document.getElementById('spec-warn-lobby').style.display='none'">
+          ← GO BACK
+        </button>
+        <button class="spec-warning-confirm" onclick="document.getElementById('spec-warn-lobby').style.display='none'; startGame(true)">
+          WATCH AS SPECTATOR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="spec-warn-ingame" class="spec-warning-modal" style="display:none">
+    <div class="spec-warning-box">
+      <div class="spec-warning-icon">⚠️</div>
+      <div class="spec-warning-title">THIS CANNOT BE UNDONE</div>
+      <div class="spec-warning-body">
+        Switching to spectator mode will <strong>eliminate your character</strong> from the game.<br><br>
+        You will <strong>no longer be able to speak, vote, or act</strong>.<br>
+        You will see all roles and secret discussions, but you <strong>cannot return to playing</strong>.
+      </div>
+      <div class="spec-warning-actions">
+        <button class="spec-warning-cancel" onclick="document.getElementById('spec-warn-ingame').style.display='none'">
+          ← STAY IN GAME
+        </button>
+        <button class="spec-warning-confirm" onclick="document.getElementById('spec-warn-ingame').style.display='none'; forceSpectate()">
+          ✕ LEAVE GAME & SPECTATE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Night Phase Icons Row -->
+  <div id="spec-night-icons"></div>
+
+  <script>
+    function confirmSpectate() {
+      // Legacy — now handled by chooseMode('spectate')
+      chooseMode('spectate');
+    }
+    function confirmIngameSpectate() {
+      // Only show warning if player is alive and not already spectating
+      const gi = window._gameInstance;
+      if (!gi || !gi.state) return;
+      const human = gi.state.players?.find(p => p.isHuman);
+      if (gi._spectateMode || !human?.alive) {
+        // Already spectating or already dead — no warning needed, just toggle overlay
+        gi.toggleSpectatorView?.();
+        return;
+      }
+      // Player is alive — show the permanent warning
+      document.getElementById('spec-warn-ingame').style.display = 'flex';
+    }
+    function toggleChatLog() {
+      const popup = document.getElementById('chat-log-popup');
+      if (!popup) return;
+      const isOpen = popup.classList.toggle('open');
+      const btn = document.getElementById('chat-toggle-btn');
+      if (btn) btn.style.borderColor = isOpen ? 'var(--gold)' : '';
+      if (isOpen) _syncChatPopup();
+    }
+    function _syncChatPopup() {
+      const popup = document.getElementById('chat-log-popup');
+      const chatLog = document.getElementById('chat-log');
+      if (!popup || !popup.classList.contains('open')) return;
+      popup.innerHTML = '<div id="chat-log-popup-header">CHAT LOG</div>';
+      Array.from(chatLog.children).forEach(c => popup.appendChild(c.cloneNode(true)));
+      popup.scrollTop = popup.scrollHeight;
+    }
+    function forceSpectate() {
+      const gi = window._gameInstance;
+      if (!gi) return;
+      // Eliminate the human player from the game, then enter spectate mode
+      gi.forceSpectateFromGame?.();
+    }
+  </script>
+
+
+  <!-- Vignette overlay -->
+  <div id="spec-vignette"></div>
+
+  <!-- Mafia secret chat panel (spectator sees this during night) -->
+  <div id="spec-mafia-chat">
+    <div id="spec-mafia-chat-header">▲ MAFIA — SECRET CHANNEL</div>
+    <div id="spec-mafia-chat-body"></div>
+  </div>
+
+  <!-- Now watching badge -->
+  <div id="spec-watching">
+    <div id="spec-watching-dot"></div>
+    <span id="spec-watching-label">AMPHITHEATER</span>
+  </div>
+
+  <!-- ── DEBUG CONSOLE PANEL (press ` backtick to toggle) ────────────────── -->
+  <div id="_debug_panel" style="display:none;position:fixed;bottom:0;left:0;right:0;height:38vh;
+    background:rgba(0,0,0,0.97);border-top:2px solid #444;z-index:9999;flex-direction:column;
+    font-family:monospace;pointer-events:all;">
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid #333;flex-shrink:0">
+      <span style="color:#c9a84c;font-size:12px;font-weight:bold;letter-spacing:.08em">DEBUG CONSOLE</span>
+      <span style="color:#666;font-size:11px">Press F12 or F13 to close</span>
+      <button onclick="document.getElementById('_debug_body').innerHTML='';window._debugLogs&&(_debugLogs.length=0)"
+        style="margin-left:auto;background:#333;border:none;color:#ccc;padding:2px 8px;border-radius:3px;cursor:pointer;font-size:11px">Clear</button>
+    </div>
+    <div id="_debug_body" style="flex:1;overflow-y:auto;padding:6px 12px;scrollbar-width:thin"></div>
+  </div>
+
+</body>
+</html>

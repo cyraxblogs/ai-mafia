@@ -1,0 +1,353 @@
+<svg width="1160" height="800" viewBox="0 0 1160 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="roundedClip">
+      <rect width="1160" height="800" rx="28"/>
+    </clipPath>
+    <linearGradient id="bg" x1="0" y1="0" x2="1160" y2="800" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#080910"/><stop offset="1" stop-color="#06070d"/>
+    </linearGradient>
+    <linearGradient id="panelFill" x1="70" y1="74" x2="1090" y2="734" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0c0d1c" stop-opacity="0.97"/><stop offset="1" stop-color="#080912" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="divLine" x1="110" y1="0" x2="1050" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.15" stop-color="#ffffff" stop-opacity="0.09"/>
+      <stop offset="0.85" stop-color="#ffffff" stop-opacity="0.09"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="btmFade" x1="0" y1="580" x2="0" y2="750" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#06070d" stop-opacity="0"/><stop offset="1" stop-color="#06070d" stop-opacity="0.90"/>
+    </linearGradient>
+    <filter id="bloodBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="28"/></filter>
+    <filter id="softBlur"  x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="moonlight" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="55"/></filter>
+    <filter id="ffGlow"    x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3.5"/></filter>
+    <filter id="cGlow"     x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="9"/></filter>
+  </defs>
+
+  <g clip-path="url(#roundedClip)">
+  <!-- bg -->
+  <rect width="1160" height="800" fill="url(#bg)"/>
+  <!-- moonlight top-left -->
+  <ellipse cx="160" cy="110" rx="360" ry="260" fill="#0b1c35" filter="url(#moonlight)" opacity="0.5"/>
+  <!-- blood atmosphere top-right -->
+  <ellipse cx="960" cy="210" rx="280" ry="180" fill="#8b0000" filter="url(#bloodBlur)" opacity="0.38">
+    <animate attributeName="opacity" values="0.28;0.46;0.28" dur="8s" repeatCount="indefinite"/>
+  </ellipse>
+  <!-- faint grid -->
+  <g opacity="0.025">
+    <path d="M0 133H1160M0 266H1160M0 399H1160M0 532H1160M0 665H1160" stroke="#fff" stroke-width="0.5"/>
+    <path d="M116 0V800M290 0V800M464 0V800M638 0V800M812 0V800M986 0V800" stroke="#fff" stroke-width="0.5"/>
+  </g>
+
+  <!-- main panel -->
+  <rect x="70" y="68" width="1020" height="666" rx="20" fill="url(#panelFill)" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
+  <!-- corner accents -->
+  <rect x="70"  y="68"  width="22" height="2"  fill="#fff" opacity="0.18"/>
+  <rect x="70"  y="68"  width="2"  height="22" fill="#fff" opacity="0.18"/>
+  <rect x="1068" y="68" width="22" height="2"  fill="#fff" opacity="0.18"/>
+  <rect x="1088" y="68" width="2"  height="22" fill="#fff" opacity="0.18"/>
+  <rect x="70"  y="732" width="22" height="2"  fill="#fff" opacity="0.18"/>
+  <rect x="70"  y="712" width="2"  height="22" fill="#fff" opacity="0.18"/>
+  <rect x="1068" y="732" width="22" height="2"  fill="#fff" opacity="0.18"/>
+  <rect x="1088" y="712" width="2"  height="22" fill="#fff" opacity="0.18"/>
+
+  <!-- eyebrow -->
+  <text x="110" y="140" fill="#e8e4dc" font-family="Georgia,serif" font-size="12" letter-spacing="8" opacity="0.28">CINEMATIC  ·  BROWSER  ·  MAFIA</text>
+
+  <!-- title glow + title -->
+  <text x="109" y="272" fill="#9a0800" font-family="Georgia,serif" font-size="116" font-weight="700" letter-spacing="10" opacity="0.38" filter="url(#bloodBlur)">AI MAFIA</text>
+  <text x="110" y="272" fill="#eceade" font-family="Georgia,serif" font-size="116" font-weight="700" letter-spacing="10">AI MAFIA</text>
+
+  <!-- subtitle -->
+  <text x="110" y="334" fill="#aaa8a0" font-family="Georgia,serif" font-size="22" font-weight="300">
+    <tspan x="110" dy="0">A voxel-night social deduction game where</tspan>
+    <tspan x="110" dy="30">real AI models lie, accuse, and vote.</tspan>
+  </text>
+
+  <!-- ── FEATURE BOXES ── -->
+  <g transform="translate(110 428)">
+    <rect width="222" height="100" rx="10" fill="#0d0e1c" stroke="#fff" stroke-opacity="0.22" stroke-width="1.5"/>
+    <rect x="1" y="1" width="220" height="26" rx="9" fill="#fff" fill-opacity="0.04"/>
+    <text x="18" y="20" fill="#e8e4dc" font-family="Georgia,serif" font-size="11" letter-spacing="5" opacity="0.68">PLAY</text>
+    <rect x="18" y="32" width="186" height="1" fill="#fff" fill-opacity="0.08"/>
+    <text x="18" y="52" fill="#c8c4bc" font-family="Georgia,serif" font-size="14">
+      <tspan x="18" dy="0">Enter the village</tspan><tspan x="18" dy="20">as the human lead.</tspan>
+    </text>
+  </g>
+  <g transform="translate(360 428)">
+    <rect width="222" height="100" rx="10" fill="#0b0c18" stroke="#fff" stroke-opacity="0.09" stroke-width="1.5"/>
+    <rect x="1" y="1" width="220" height="26" rx="9" fill="#fff" fill-opacity="0.02"/>
+    <text x="18" y="20" fill="#e8e4dc" font-family="Georgia,serif" font-size="11" letter-spacing="5" opacity="0.30">SPECTATE</text>
+    <rect x="18" y="32" width="186" height="1" fill="#fff" fill-opacity="0.04"/>
+    <text x="18" y="52" fill="#8e8a84" font-family="Georgia,serif" font-size="14">
+      <tspan x="18" dy="0">Watch hidden roles</tspan><tspan x="18" dy="20">and night actions.</tspan>
+    </text>
+  </g>
+  <g transform="translate(110 552)">
+    <rect width="222" height="100" rx="10" fill="#0a0b14" stroke="#2a2a3a" stroke-opacity="0.9" stroke-width="1.5"/>
+    <text x="18" y="20" fill="#484858" font-family="Georgia,serif" font-size="11" letter-spacing="5">AUDIO</text>
+    <rect x="18" y="32" width="186" height="1" fill="#fff" fill-opacity="0.04"/>
+    <text x="18" y="52" fill="#5e5e76" font-family="Georgia,serif" font-size="14">
+      <tspan x="18" dy="0">Synth cues, ambience,</tspan><tspan x="18" dy="20">and tutorial effects.</tspan>
+    </text>
+  </g>
+  <g transform="translate(360 552)">
+    <rect width="222" height="100" rx="10" fill="#100508" stroke="#8b0000" stroke-opacity="0.50" stroke-width="1.5"/>
+    <rect x="1" y="1" width="220" height="26" rx="9" fill="#8b0000" fill-opacity="0.09"/>
+    <text x="18" y="20" fill="#c83838" font-family="Georgia,serif" font-size="11" letter-spacing="5">AI MODELS</text>
+    <rect x="18" y="32" width="186" height="1" fill="#8b0000" fill-opacity="0.26"/>
+    <text x="18" y="52" fill="#c09898" font-family="Georgia,serif" font-size="14">
+      <tspan x="18" dy="0">LLMs deceive, defend,</tspan><tspan x="18" dy="20">and vote in real time.</tspan>
+    </text>
+  </g>
+
+  <!-- ══ VILLAGE ILLUSTRATION ══ -->
+
+  <!-- atmospheric halos -->
+  <ellipse cx="880" cy="294" rx="120" ry="86" fill="#8b0000" filter="url(#bloodBlur)" opacity="0.26">
+    <animate attributeName="opacity" values="0.16;0.34;0.16" dur="7s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- ground tiles -->
+  <rect x="700" y="604" width="370" height="14" rx="2" fill="#101c0c"/>
+  <rect x="716" y="592" width="48" height="14" rx="1" fill="#182810"/>
+  <rect x="764" y="592" width="48" height="14" rx="1" fill="#14200e"/>
+  <rect x="812" y="592" width="48" height="14" rx="1" fill="#182810"/>
+  <rect x="860" y="592" width="48" height="14" rx="1" fill="#14200e"/>
+  <rect x="908" y="592" width="48" height="14" rx="1" fill="#182810"/>
+  <rect x="956" y="592" width="48" height="14" rx="1" fill="#14200e"/>
+  <rect x="1004" y="592" width="66" height="14" rx="1" fill="#182810"/>
+
+  <!-- big house -->
+  <rect x="716" y="454" width="134" height="140" rx="2" fill="#120c08"/>
+  <rect x="712" y="432" width="140" height="26" rx="2" fill="#1a100c"/>
+  <rect x="714" y="424" width="136" height="10" rx="1" fill="#0c0a06"/>
+  <rect x="726" y="476" width="28" height="24" rx="2" fill="#c8a040" opacity="0.75">
+    <animate attributeName="opacity" values="0.50;0.84;0.66;0.86;0.50" dur="7.2s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="726" y="476" width="28" height="24" rx="2" fill="#f0c038" filter="url(#softBlur)" opacity="0.26"/>
+  <rect x="772" y="476" width="28" height="24" rx="2" fill="#c8a040" opacity="0.75">
+    <animate attributeName="opacity" values="0.58;0.82;0.52;0.88;0.58" dur="8.8s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="772" y="476" width="28" height="24" rx="2" fill="#f0c038" filter="url(#softBlur)" opacity="0.26"/>
+  <rect x="746" y="526" width="26" height="68" rx="2" fill="#0a0406"/>
+  <circle cx="771" cy="562" r="2.5" fill="#b89030" opacity="0.40"/>
+
+  <!-- smaller house (right) -->
+  <rect x="968" y="504" width="96" height="90" rx="2" fill="#12060e"/>
+  <rect x="964" y="482" width="104" height="26" rx="2" fill="#1a0c16"/>
+  <rect x="966" y="474" width="100" height="10" rx="1" fill="#0c040a"/>
+  <rect x="994" y="542" width="22" height="52" rx="2" fill="#440608"/>
+  <circle cx="1015" cy="568" r="2.5" fill="#b89030" opacity="0.36"/>
+  <rect x="1024" y="512" width="24" height="20" rx="2" fill="#c8a040" opacity="0.56">
+    <animate attributeName="opacity" values="0.34;0.68;0.46;0.72;0.34" dur="11.5s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- lamp post -->
+  <rect x="892" y="344" width="5" height="250" rx="2" fill="#101018"/>
+  <circle cx="894" cy="340" r="13" fill="#8b0000" opacity="0.42">
+    <animate attributeName="opacity" values="0.24;0.54;0.34;0.56;0.24" dur="5.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="894" cy="340" r="7" fill="#cc3c00" opacity="0.88"/>
+  <circle cx="894" cy="340" r="3.5" fill="#f0a020"/>
+  <ellipse cx="894" cy="354" rx="24" ry="12" fill="#c08020" filter="url(#softBlur)" opacity="0.22"/>
+
+  <!-- Stars -->
+  <circle cx="978" cy="188" r="2.3" fill="#eeeae2"><animate attributeName="opacity" values="0.28;0.62;0.28" dur="4.2s" repeatCount="indefinite"/></circle>
+  <circle cx="850" cy="160" r="1.8" fill="#eeeae2"><animate attributeName="opacity" values="0.18;0.52;0.18" dur="5.8s" repeatCount="indefinite"/></circle>
+  <circle cx="1040" cy="226" r="1.5" fill="#eeeae2"><animate attributeName="opacity" values="0.14;0.50;0.14" dur="3.5s" repeatCount="indefinite"/></circle>
+  <circle cx="740" cy="206" r="1.8" fill="#eeeae2"><animate attributeName="opacity" values="0.10;0.40;0.10" dur="6.5s" repeatCount="indefinite"/></circle>
+  <circle cx="918" cy="134" r="2"   fill="#e8ecf8"><animate attributeName="opacity" values="0.18;0.58;0.18" dur="7.1s" repeatCount="indefinite"/></circle>
+  <circle cx="1070" cy="168" r="1.5" fill="#eeeae2"><animate attributeName="opacity" values="0.10;0.46;0.10" dur="5.2s" repeatCount="indefinite"/></circle>
+  <circle cx="1000" cy="106" r="2.2" fill="#eeeae2"><animate attributeName="opacity" values="0.18;0.60;0.18" dur="4.8s" repeatCount="indefinite"/></circle>
+  <circle cx="876" cy="216" r="1.3" fill="#eeeae2"><animate attributeName="opacity" values="0.10;0.44;0.10" dur="11.2s" repeatCount="indefinite"/></circle>
+
+  <!-- Fireflies -->
+  <g><animateTransform attributeName="transform" type="translate" values="856,384;862,376;853,390;860,382;856,384" dur="17s" repeatCount="indefinite"/>
+    <circle r="2" fill="#c8e850"><animate attributeName="opacity" values="0;0.72;0.08;0.64;0" dur="4.4s" repeatCount="indefinite"/></circle>
+    <circle r="7" fill="#a8d030" filter="url(#ffGlow)"><animate attributeName="opacity" values="0;0.28;0;0.22;0" dur="4.4s" repeatCount="indefinite"/></circle>
+  </g>
+  <g><animateTransform attributeName="transform" type="translate" values="938,456;932,461;941,449;935,458;938,456" dur="22s" repeatCount="indefinite"/>
+    <circle r="1.8" fill="#b8e04a"><animate attributeName="opacity" values="0;0.64;0;0.56;0" dur="5.8s" repeatCount="indefinite" begin="1.3s"/></circle>
+    <circle r="6" fill="#98c828" filter="url(#ffGlow)"><animate attributeName="opacity" values="0;0.24;0;0.18;0" dur="5.8s" repeatCount="indefinite" begin="1.3s"/></circle>
+  </g>
+  <g><animateTransform attributeName="transform" type="translate" values="862,514;858,521;865,510;860,517;862,514" dur="14s" repeatCount="indefinite"/>
+    <circle r="2.2" fill="#d0ea58"><animate attributeName="opacity" values="0;0.60;0.05;0.52;0" dur="3.9s" repeatCount="indefinite" begin="2.4s"/></circle>
+    <circle r="8" fill="#b8d840" filter="url(#ffGlow)"><animate attributeName="opacity" values="0;0.26;0;0.20;0" dur="3.9s" repeatCount="indefinite" begin="2.4s"/></circle>
+  </g>
+  <g><animateTransform attributeName="transform" type="translate" values="1048,366;1044,359;1052,370;1046,363;1048,366" dur="26s" repeatCount="indefinite"/>
+    <circle r="1.5" fill="#c0e050"><animate attributeName="opacity" values="0;0.55;0;0.46;0" dur="6.8s" repeatCount="indefinite" begin="3.7s"/></circle>
+    <circle r="5"   fill="#a0c830" filter="url(#ffGlow)"><animate attributeName="opacity" values="0;0.20;0;0.16;0" dur="6.8s" repeatCount="indefinite" begin="3.7s"/></circle>
+  </g>
+
+  <!-- bottom fade (drawn before characters so chars are on top) -->
+  <rect y="576" width="1160" height="224" fill="url(#btmFade)"/>
+
+  <!-- ══════════════════════════════════════════
+       CHIBI VOXEL CHARACTERS
+       All local coords: 0,0 = ground contact point
+       GPT (#10a37f green)  — at x=838  — ACCUSING
+       Claude (#cc5c35 orange) — at x=1040 — DEFENDING
+  ══════════════════════════════════════════ -->
+
+  <!-- ── GPT: gentle bob, right arm points right toward Claude ── -->
+  <g transform="translate(838,594)">
+    <animateTransform attributeName="transform" type="translate" additive="sum"
+      values="0,0;0,-5;0,1;0,-4;0,0" dur="3.2s" repeatCount="indefinite"/>
+
+    <!-- soft glow under feet -->
+    <ellipse cx="0" cy="-1" rx="16" ry="5" fill="#10a37f" filter="url(#cGlow)" opacity="0.14">
+      <animate attributeName="opacity" values="0.08;0.20;0.08" dur="3.2s" repeatCount="indefinite"/>
+    </ellipse>
+
+    <!-- Legs -->
+    <rect x="-11" y="-22" width="10" height="22" rx="2" fill="#087a5c"/>
+    <rect x="1"   y="-22" width="10" height="22" rx="2" fill="#065a42"/>
+
+    <!-- Torso -->
+    <rect x="-12" y="-44" width="24" height="22" rx="3" fill="#0d9070"/>
+    <rect x="-11" y="-44" width="22" height="5"  rx="2" fill="#13a87f" opacity="0.5"/>
+
+    <!-- Left arm (at side, slightly swaying) -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" additive="sum"
+        values="5 -14 -43;10 -14 -43;5 -14 -43" dur="3.2s" repeatCount="indefinite"/>
+      <rect x="-23" y="-43" width="10" height="18" rx="2" fill="#087a5c"/>
+    </g>
+
+    <!-- Right arm: rotate -78° CCW (pointing toward Claude, rightward) + oscillates -->
+    <g transform="rotate(-78,12,-43)">
+      <animateTransform attributeName="transform" type="rotate" additive="sum"
+        values="0 12 -43;-8 12 -43;2 12 -43;-6 12 -43;0 12 -43" dur="2.0s" repeatCount="indefinite"/>
+      <rect x="12" y="-43" width="10" height="18" rx="2" fill="#087a5c"/>
+      <!-- pointing tip -->
+      <rect x="18" y="-43" width="5"  height="5"  rx="1" fill="#054a34"/>
+    </g>
+
+    <!-- Head — large chibi cube (34×34) -->
+    <rect x="-17" y="-80" width="34" height="34" rx="4" fill="#10a37f"/>
+    <!-- head top face -->
+    <rect x="-17" y="-80" width="34" height="8" rx="4" fill="#16c090" opacity="0.40"/>
+    <!-- eyes: white sclera + dark iris + black pupil + catchlight sparkle -->
+    <rect x="-13" y="-75" width="9" height="9" rx="2" fill="white" opacity="0.93"/>
+    <rect x="4"   y="-75" width="9" height="9" rx="2" fill="white" opacity="0.93"/>
+    <rect x="-12" y="-74" width="7" height="7" rx="1" fill="#044832"/>
+    <rect x="5"   y="-74" width="7" height="7" rx="1" fill="#044832"/>
+    <rect x="-7"  y="-72" width="3" height="3" fill="#021e18"/>
+    <rect x="9"   y="-72" width="3" height="3" fill="#021e18"/>
+    <rect x="-11" y="-73" width="2" height="2" fill="white" opacity="0.75"/>
+    <rect x="6"   y="-73" width="2" height="2" fill="white" opacity="0.75"/>
+    <!-- OpenAI logo — Bootstrap Icons path (viewBox 0 0 16 16), scaled × 1.375 to fill 22×22 px -->
+    <g transform="translate(-11,-69) scale(1.375)">
+      <path fill="white" opacity="0.88" d="M14.949 6.547a3.94 3.94 0 0 0-.348-3.273 4.11 4.11 0 0 0-4.4-1.934A4.1 4.1 0 0 0 8.423.2 4.15 4.15 0 0 0 6.305.086a4.1 4.1 0 0 0-1.891.948 4.04 4.04 0 0 0-1.158 1.753 4.1 4.1 0 0 0-1.563.679A4 4 0 0 0 .554 4.72a3.99 3.99 0 0 0 .502 4.731 3.94 3.94 0 0 0 .346 3.274 4.11 4.11 0 0 0 4.402 1.933c.382.425.852.764 1.377.995.526.231 1.095.35 1.67.346 1.78.002 3.358-1.132 3.901-2.804a4.1 4.1 0 0 0 1.563-.68 4 4 0 0 0 1.14-1.253 3.99 3.99 0 0 0-.506-4.716m-6.097 8.406a3.05 3.05 0 0 1-1.945-.694l.096-.054 3.23-1.838a.53.53 0 0 0 .265-.455v-4.49l1.366.778q.02.011.025.035v3.722c-.003 1.653-1.361 2.992-3.037 2.996m-6.53-2.75a2.95 2.95 0 0 1-.36-2.01l.095.057L5.29 12.09a.53.53 0 0 0 .527 0l3.949-2.246v1.555a.05.05 0 0 1-.022.041L6.473 13.3c-1.454.826-3.311.335-4.15-1.098m-.85-6.94A3.02 3.02 0 0 1 3.07 3.949v3.785a.51.51 0 0 0 .262.451l3.93 2.237-1.366.779a.05.05 0 0 1-.048 0L2.585 9.342a2.98 2.98 0 0 1-1.113-4.094zm11.216 2.571L8.747 5.576l1.362-.776a.05.05 0 0 1 .048 0l3.265 1.86a3 3 0 0 1 1.173 1.207 2.96 2.96 0 0 1-.27 3.2 3.05 3.05 0 0 1-1.36.997V8.279a.52.52 0 0 0-.276-.445m1.36-2.015-.097-.057-3.226-1.855a.53.53 0 0 0-.53 0L6.249 6.153V4.598a.04.04 0 0 1 .019-.04L9.533 2.7a3.07 3.07 0 0 1 3.257.139c.474.325.843.778 1.066 1.303.223.526.289 1.103.191 1.664zM5.503 8.575 4.139 7.8a.05.05 0 0 1-.026-.037V4.049c0-.57.166-1.127.476-1.607s.752-.864 1.275-1.105a3.08 3.08 0 0 1 3.234.41l-.096.054-3.23 1.838a.53.53 0 0 0-.265.455zm.742-1.577 1.758-1 1.762 1v2l-1.755 1-1.762-1z"/>
+    </g>
+
+    <!-- name tag -->
+    <rect x="-20" y="-96" width="40" height="13" rx="3" fill="#000" opacity="0.72"/>
+    <text x="0" y="-85" fill="#10a37f" font-family="Georgia,serif"
+      font-size="8" text-anchor="middle" font-weight="bold" letter-spacing="1">GPT</text>
+
+    <!-- speech bubble "sus..." — bobs independently -->
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum"
+        values="0,0;0,-4;0,1;0,-3;0,0" dur="2.6s" repeatCount="indefinite" begin="0.3s"/>
+      <rect x="-60" y="-126" width="56" height="24" rx="5" fill="#0a7860" opacity="0.92"/>
+      <!-- tail -->
+      <polygon points="-22,-102 -16,-96 -10,-102" fill="#0a7860" opacity="0.92"/>
+      <text x="-32" y="-109" fill="#ffffff" font-family="Georgia,serif"
+        font-size="10" font-style="italic">"sus..."</text>
+    </g>
+  </g>
+
+  <!-- ── CLAUDE: faster jittery bob, both arms raised in defense ── -->
+  <g transform="translate(1040,594)">
+    <animateTransform attributeName="transform" type="translate" additive="sum"
+      values="0,0;0,-4;0,2;0,-5;0,0" dur="2.6s" repeatCount="indefinite" begin="0.5s"/>
+
+    <!-- glow under feet -->
+    <ellipse cx="0" cy="-1" rx="16" ry="5" fill="#cc5c35" filter="url(#cGlow)" opacity="0.12">
+      <animate attributeName="opacity" values="0.06;0.18;0.06" dur="2.6s" repeatCount="indefinite" begin="0.5s"/>
+    </ellipse>
+
+    <!-- Legs (shaking slightly) -->
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum"
+        values="0,0;-1,0;1,0;-1,0;0,0" dur="0.4s" repeatCount="indefinite" begin="0.1s"/>
+      <rect x="-11" y="-22" width="10" height="22" rx="2" fill="#9a3c1c"/>
+      <rect x="1"   y="-22" width="10" height="22" rx="2" fill="#8a2c0e"/>
+    </g>
+
+    <!-- Torso -->
+    <rect x="-12" y="-44" width="24" height="22" rx="3" fill="#cc5c35"/>
+    <rect x="-11" y="-44" width="22" height="5"  rx="2" fill="#e06840" opacity="0.45"/>
+
+    <!-- Left arm raised ~78° CW (pivot at arm's right-top where it meets torso: -12,-43) -->
+    <g transform="rotate(78,-12,-43)">
+      <animateTransform attributeName="transform" type="rotate" additive="sum"
+        values="0 -12 -43;7 -12 -43;-4 -12 -43;6 -12 -43;0 -12 -43"
+        dur="1.7s" repeatCount="indefinite" begin="0.2s"/>
+      <rect x="-23" y="-43" width="10" height="18" rx="2" fill="#9a3c1c"/>
+    </g>
+
+    <!-- Right arm raised ~78° CCW (pivot at left-top of arm: 12,-43) -->
+    <g transform="rotate(-78,12,-43)">
+      <animateTransform attributeName="transform" type="rotate" additive="sum"
+        values="0 12 -43;-7 12 -43;4 12 -43;-6 12 -43;0 12 -43"
+        dur="1.7s" repeatCount="indefinite" begin="0.2s"/>
+      <rect x="12" y="-43" width="10" height="18" rx="2" fill="#8a2c0e"/>
+    </g>
+
+    <!-- Head — chibi cube (34×34) -->
+    <rect x="-17" y="-80" width="34" height="34" rx="4" fill="#cc5c35"/>
+    <rect x="-17" y="-80" width="34" height="8" rx="4" fill="#e07040" opacity="0.42"/>
+    <!-- eyes: white sclera + dark iris + black pupil + catchlight sparkle -->
+    <rect x="-13" y="-75" width="10" height="10" rx="2" fill="white" opacity="0.93"/>
+    <rect x="3"   y="-75" width="10" height="10" rx="2" fill="white" opacity="0.93"/>
+    <rect x="-12" y="-74" width="8" height="8" rx="1" fill="#6a1c08"/>
+    <rect x="4"   y="-74" width="8" height="8" rx="1" fill="#6a1c08"/>
+    <rect x="-9"  y="-71" width="3" height="3" fill="#300802"/>
+    <rect x="7"   y="-71" width="3" height="3" fill="#300802"/>
+    <rect x="-11" y="-73" width="2" height="2" fill="white" opacity="0.75"/>
+    <rect x="5"   y="-73" width="2" height="2" fill="white" opacity="0.75"/>
+    <!-- Claude logo — Bootstrap Icons path (viewBox 0 0 16 16), scaled × 1.375 to fill 22×22 px -->
+    <g transform="translate(-11,-69) scale(1.375)">
+      <path fill="white" opacity="0.88" d="m3.127 10.604 3.135-1.76.053-.153-.053-.085H6.11l-.525-.032-1.791-.048-1.554-.065-1.505-.08-.38-.081L0 7.832l.036-.234.32-.214.455.04 1.009.069 1.513.105 1.097.064 1.626.17h.259l.036-.105-.089-.065-.068-.064-1.566-1.062-1.695-1.121-.887-.646-.48-.327-.243-.306-.104-.67.435-.48.585.04.15.04.593.456 1.267.981 1.654 1.218.242.202.097-.068.012-.049-.109-.181-.9-1.626-.96-1.655-.428-.686-.113-.411a2 2 0 0 1-.068-.484l.496-.674L4.446 0l.662.089.279.242.411.94.666 1.48 1.033 2.014.302.597.162.553.06.17h.105v-.097l.085-1.134.157-1.392.154-1.792.052-.504.25-.605.497-.327.387.186.319.456-.045.294-.19 1.23-.37 1.93-.243 1.29h.142l.161-.16.654-.868 1.097-1.372.484-.545.565-.601.363-.287h.686l.505.751-.226.775-.707.895-.585.759-.839 1.13-.524.904.048.072.125-.012 1.897-.403 1.024-.186 1.223-.21.553.258.06.263-.218.536-1.307.323-1.533.307-2.284.54-.028.02.032.04 1.029.098.44.024h1.077l2.005.15.525.346.315.424-.053.323-.807.411-3.631-.863-.872-.218h-.12v.073l.726.71 1.331 1.202 1.667 1.55.084.383-.214.302-.226-.032-1.464-1.101-.565-.497-1.28-1.077h-.084v.113l.295.432 1.557 2.34.08.718-.112.234-.404.141-.444-.08-.911-1.28-.94-1.44-.759-1.291-.093.053-.448 4.821-.21.246-.484.186-.403-.307-.214-.496.214-.98.258-1.28.21-1.016.19-1.263.112-.42-.008-.028-.092.012-.953 1.307-1.448 1.957-1.146 1.227-.274.109-.477-.247.045-.44.266-.39 1.586-2.018.956-1.25.617-.723-.004-.105h-.036l-4.212 2.736-.75.096-.324-.302.04-.496.154-.162 1.267-.871z"/>
+    </g>
+
+    <!-- name tag -->
+    <rect x="-26" y="-96" width="52" height="13" rx="3" fill="#000" opacity="0.72"/>
+    <text x="0" y="-85" fill="#cc5c35" font-family="Georgia,serif"
+      font-size="8" text-anchor="middle" font-weight="bold" letter-spacing="1">CLAUDE</text>
+
+    <!-- sweat drops -->
+    <circle cx="20" cy="-78" r="3" fill="#6ecaff">
+      <animate attributeName="cy"      values="-78;-56;-78" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+      <animate attributeName="opacity" values="0.9;0.0;0.9" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+    </circle>
+    <circle cx="25" cy="-70" r="2.2" fill="#6ecaff">
+      <animate attributeName="cy"      values="-70;-50;-70" dur="1.5s" repeatCount="indefinite" begin="0.4s"/>
+      <animate attributeName="opacity" values="0.8;0.0;0.8" dur="1.5s" repeatCount="indefinite" begin="0.4s"/>
+    </circle>
+
+    <!-- reaction bubble "?!" — jitters -->
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum"
+        values="0,0;2,-3;-2,-2;1,-4;0,0" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
+      <rect x="8" y="-126" width="30" height="24" rx="5" fill="#cc5c35" opacity="0.90"/>
+      <polygon points="10,-102 16,-96 22,-102" fill="#cc5c35" opacity="0.90"/>
+      <text x="23" y="-108" fill="#ffffff" font-family="Georgia,serif"
+        font-size="13" font-weight="bold" text-anchor="middle">?!</text>
+    </g>
+  </g>
+
+  <!-- ═══════════ BOTTOM BAR ═══════════ -->
+  <rect x="110" y="684" width="940" height="1" fill="url(#divLine)"/>
+  <text x="110" y="704" fill="#585868" font-family="Georgia,serif" font-size="13" letter-spacing="3">
+    THREE.JS  ·  GSAP  ·  EXPRESS  ·  WEB AUDIO API  ·  COMMONSTACK
+  </text>
+  <text x="110" y="724" fill="#333344" font-family="Georgia,serif" font-size="15" font-style="italic">
+    Built as a dramatic playable showcase, not a generic demo.
+  </text>
+  </g>
+</svg>
