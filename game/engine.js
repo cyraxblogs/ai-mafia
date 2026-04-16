@@ -900,7 +900,7 @@ export class GameEngine {
         'xai/grok-4', 'xai/grok-3', 'xai/grok-3-mini',   // prefix must be x-ai/ not xai/
         'zhipu/glm-5',                                      // prefix must be zai-org/ not zhipu/
 
-        // ── Old/stale slugs replaced by correct ones ─────────────────────
+        // ── Old/stale slugs replaced by correct ones(used openrouter before) ─────────────────────
         'anthropic/claude-sonnet-4-20250514',   // reverted: actual slug is claude-sonnet-4-6
         'anthropic/claude-opus-4-5',            // not in Commonstack list
         'anthropic/claude-3-7-sonnet-20250219', // retired
