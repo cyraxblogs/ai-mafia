@@ -1,4 +1,4 @@
-﻿import { ICON_MAFIA, ICON_DOCTOR, ICON_SHERIFF, ICON_VILLAGER, ICON_GUN, ICON_EYE, ICON_SUN, ICON_MOON, ICON_SKULL, ICON_CHAT, ICON_SCALES, ICON_THINKING, ICON_SHIELD, ICON_KILLSHOT, ICON_INVESTIGATE, ICON_WARNING, ICON_CLIPBOARD, icon } from '../src/ui/PixelIcons.js';
+import { ICON_MAFIA, ICON_DOCTOR, ICON_SHERIFF, ICON_VILLAGER, ICON_GUN, ICON_EYE, ICON_SUN, ICON_MOON, ICON_SKULL, ICON_CHAT, ICON_SCALES, ICON_THINKING, ICON_SHIELD, ICON_KILLSHOT, ICON_INVESTIGATE, ICON_WARNING, ICON_CLIPBOARD, icon } from '../src/ui/PixelIcons.js';
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { MODELS, STATIC_MODELS, MODEL_META, buildModelEntry } from './models.js';
@@ -900,7 +900,7 @@ export class GameEngine {
         'xai/grok-4', 'xai/grok-3', 'xai/grok-3-mini',   // prefix must be x-ai/ not xai/
         'zhipu/glm-5',                                      // prefix must be zai-org/ not zhipu/
 
-        // ── Old/stale slugs replaced by correct ones(used openrouter before) ─────────────────────
+        // ── Old/stale slugs replaced by correct ones ─────────────────────
         'anthropic/claude-sonnet-4-20250514',   // reverted: actual slug is claude-sonnet-4-6
         'anthropic/claude-opus-4-5',            // not in Commonstack list
         'anthropic/claude-3-7-sonnet-20250219', // retired
@@ -3186,56 +3186,77 @@ export class GameEngine {
 
     if (role === 'sheriff') {
       const humanSheriff = human?.role === 'sheriff' && human?.alive;
-      const aiSheriff    = alive.find(p => !p.isHuman && p.role === 'sheriff');
+      const humanDoctor  = human?.role === 'doctor'  && human?.alive;
 
       if (humanSheriff) {
-        // Human is sheriff — show their UI, which calls _humanNightChain(alive,'doctor') when done
+        // Human is sheriff — UI handles it; calls _humanNightChain(alive,'doctor') when done
         this._humanSheriffNightAction(alive);
         return;
       }
-      if (aiSheriff) {
-        // AI sheriff — run silently then move on
-        try {
-          const prompt = buildNightSheriffPrompt(aiSheriff, this.state);
-          const content = await this._aiDecide(aiSheriff, prompt.system, prompt.user);
-          if (content) {
-            const targetId = this._parseTarget(content, alive.filter(p => p.id !== aiSheriff.id), aiSheriff.id);
-            const target   = this.state.players.find(p => p.id === targetId);
-            if (target) {
-              this.state.investigationHistory[target.id] = target.role === 'mafia' ? 'mafia' : 'town';
-              if (target.role === 'mafia') this.state._sheriffNightKill = target.id;
-            }
-          }
-        } catch {}
+
+      if (!humanDoctor) {
+        // Both sheriff AND doctor are AI — run them in parallel, then resolve
+        const aiSheriff = alive.find(p => !p.isHuman && p.role === 'sheriff');
+        const aiDoctor  = alive.find(p => !p.isHuman && p.role === 'doctor');
+        await Promise.all([
+          this._runAiSheriffSilent(aiSheriff, alive),
+          this._runAiDoctorSilent(aiDoctor, alive),
+        ]);
+        this._processNightOutcome(alive);
+        return;
       }
-      // Fall through to doctor
+
+      // Doctor is human — AI sheriff runs first, then hand off to human doctor UI
+      const aiSheriff = alive.find(p => !p.isHuman && p.role === 'sheriff');
+      await this._runAiSheriffSilent(aiSheriff, alive);
       this._humanNightChain(alive, 'doctor');
       return;
     }
 
     if (role === 'doctor') {
       const humanDoctor = human?.role === 'doctor' && human?.alive;
-      const aiDoctor    = alive.find(p => !p.isHuman && p.role === 'doctor');
 
       if (humanDoctor) {
         // Human is doctor — show their UI, which calls _processNightOutcome when done
         this._humanDoctorNightAction(alive);
         return;
       }
-      if (aiDoctor) {
-        try {
-          const prompt = buildNightDoctorPrompt(aiDoctor, this.state);
-          const docContent = await this._aiDecide(aiDoctor, prompt.system, prompt.user);
-          if (docContent) {
-            const targetId = this._parseTarget(docContent, alive, aiDoctor.id);
-            const target   = this.state.players.find(p => p.id === targetId);
-            if (target) this.state.doctorProtectedId = target.id;
-          }
-        } catch {}
-      }
-      // All roles done — resolve night
+
+      // AI doctor only
+      const aiDoctor = alive.find(p => !p.isHuman && p.role === 'doctor');
+      await this._runAiDoctorSilent(aiDoctor, alive);
       this._processNightOutcome(alive);
     }
+  }
+
+  // Helpers — isolated AI role actions with retries=1 (simple name responses don't need 3 attempts)
+  async _runAiSheriffSilent(aiSheriff, alive) {
+    if (!aiSheriff) return;
+    try {
+      const prompt   = buildNightSheriffPrompt(aiSheriff, this.state);
+      const content  = await this._aiDecide(aiSheriff, prompt.system, prompt.user, 1);
+      if (content) {
+        const targetId = this._parseTarget(content, alive.filter(p => p.id !== aiSheriff.id), aiSheriff.id);
+        const target   = this.state.players.find(p => p.id === targetId);
+        if (target) {
+          this.state.investigationHistory[target.id] = target.role === 'mafia' ? 'mafia' : 'town';
+          if (target.role === 'mafia') this.state._sheriffNightKill = target.id;
+        }
+      }
+    } catch {}
+  }
+
+  async _runAiDoctorSilent(aiDoctor, alive) {
+    if (!aiDoctor) return;
+    try {
+      const prompt     = buildNightDoctorPrompt(aiDoctor, this.state);
+      const docContent = await this._aiDecide(aiDoctor, prompt.system, prompt.user, 1);
+      if (docContent) {
+        const targetId = this._parseTarget(docContent, alive, aiDoctor.id);
+        const target   = this.state.players.find(p => p.id === targetId);
+        if (target) this.state.doctorProtectedId = target.id;
+      }
+    } catch {}
   }
 
   // Keep old name as alias so any legacy spectator path still works
@@ -3321,38 +3342,52 @@ export class GameEngine {
   async _runMafiaDiscussionAndVote(aiMafia, alive, chatFeed, mafiaVotes) {
     const targets      = alive.filter(p => p.role !== 'mafia');
     const aiMafiaNames = aiMafia.map(p => p.name).join(', ');
-    // Discussion
+    const discussionLog = [];
+
+    // Single discussion pass — each member speaks and implicitly names their target.
+    // We parse the vote from the discussion text directly, eliminating a full extra round of API calls.
     for (const mafioso of aiMafia) {
       try {
-        const prompt = buildMafiaDiscussPrompt(mafioso, this.state, targets, aiMafiaNames);
-        const res    = await this._aiDecide(mafioso, prompt.system, prompt.user);
-        if (res && chatFeed) {
-          const row = document.createElement('div');
-          row.style.cssText = 'margin-bottom:0.35rem;border-bottom:1px solid rgba(139,0,0,0.2);padding-bottom:0.35rem;';
-          row.innerHTML = `<span style="color:#ef4444;font-weight:700">${mafioso.name}:</span> ${res}`;
-          chatFeed.appendChild(row);
-          chatFeed.scrollTop = chatFeed.scrollHeight;
-        }
-      } catch {}
-      await this._sleep(600);
-    }
-    // Each AI votes
-    for (const mafioso of aiMafia) {
-      try {
-        const prompt = buildNightMafiaPrompt(mafioso, this.state, targets);
-        const res    = await this._aiDecide(mafioso, prompt.system, prompt.user);
+        const prompt  = buildMafiaDiscussPrompt(mafioso, this.state, targets, aiMafiaNames);
+        const context = discussionLog.length
+          ? `\n\nMafia discussion so far:\n${discussionLog.map((l, i) => `${i + 1}. ${l}`).join('\n')}`
+          : '\n\nYou open the discussion. Name the exact target you want to hit tonight.';
+        const userMsg = prompt.user + context + '\n\nEnd your message by naming your exact target choice.';
+        // retries=1 — night decisions are simple name responses; no need to burn 3 attempts
+        const res = await this._aiDecide(mafioso, prompt.system, userMsg, 1);
         if (res) {
+          discussionLog.push(`${mafioso.name}: ${res}`);
+          // Parse target directly from discussion — avoids a second API call per member
           const targetId = this._parseTarget(res, targets, mafioso.id);
           mafiaVotes[mafioso.id] = targetId;
-          // Show their choice on the button
-          const target = targets.find(p => p.id === targetId);
-          if (target && chatFeed) {
+          if (chatFeed) {
             const row = document.createElement('div');
-            row.style.cssText = 'margin-bottom:0.3rem;font-size:0.8rem;';
-            row.innerHTML = `<span style="color:#f87171">▲ ${mafioso.name} votes</span> → <span style="color:#fca5a5">${target.name}</span>`;
+            row.style.cssText = 'margin-bottom:0.35rem;border-bottom:1px solid rgba(139,0,0,0.2);padding-bottom:0.35rem;';
+            const targetName = targetId ? targets.find(p => p.id === targetId)?.name : null;
+            row.innerHTML = `<span style="color:#ef4444;font-weight:700">${mafioso.name}:</span> ${res}`
+              + (targetName ? ` <span style="color:#fca5a5;font-size:0.78rem"> → ${targetName}</span>` : '');
             chatFeed.appendChild(row);
             chatFeed.scrollTop = chatFeed.scrollHeight;
           }
+        }
+      } catch {}
+      await this._sleep(300); // reduced from 600ms — just enough for UI to breathe
+    }
+
+    // Fallback: if discussion parsing yielded no valid votes, fire ONE lightweight kill-decision call
+    const hasVotes = Object.values(mafiaVotes).some(v => v);
+    if (!hasVotes && aiMafia.length > 0) {
+      try {
+        const attacker   = aiMafia[0];
+        const killPrompt = buildNightMafiaPrompt(attacker, this.state, targets);
+        const killUser   = killPrompt.user
+          + (discussionLog.length
+              ? `\n\nBunker discussion:\n${discussionLog.join('\n')}\n\nChoose final target — respond with ONLY the player name.`
+              : '\n\nRespond with ONLY the player name.');
+        const res = await this._aiDecide(attacker, killPrompt.system, killUser, 1);
+        if (res) {
+          const targetId = this._parseTarget(res, targets, attacker.id);
+          if (targetId) mafiaVotes[attacker.id] = targetId;
         }
       } catch {}
     }
@@ -3495,37 +3530,42 @@ export class GameEngine {
   async _processAllNightActions(alive, humanAlreadyActed = false) {
     // When spectating, the full spectator runner handles all AI actions with visuals
     // This path is only for when human is a live player (villager)
+
+    // Run AI sheriff and doctor in parallel — they are fully independent
     const aiSheriff = alive.find(p => !p.isHuman && p.role === 'sheriff');
-    if (aiSheriff) {
-      try {
-        const prompt = buildNightSheriffPrompt(aiSheriff, this.state);
-        const content = await this._aiDecide(aiSheriff, prompt.system, prompt.user);
-        if (content) {
-          const targetId = this._parseTarget(content, alive.filter(p => p.id !== aiSheriff.id), aiSheriff.id);
-          const target = this.state.players.find(p => p.id === targetId);
-          if (target) {
-            this.state.investigationHistory[target.id] = target.role === 'mafia' ? 'mafia' : 'town';
-            // Sheriff kills confirmed Mafia instantly — Town targets are never harmed
-            if (target.role === 'mafia') {
-              this.state._sheriffNightKill = target.id;
+    const aiDoctor  = alive.find(p => !p.isHuman && p.role === 'doctor' && !humanAlreadyActed);
+
+    await Promise.all([
+      // Sheriff
+      (async () => {
+        if (!aiSheriff) return;
+        try {
+          const prompt  = buildNightSheriffPrompt(aiSheriff, this.state);
+          const content = await this._aiDecide(aiSheriff, prompt.system, prompt.user, 1);
+          if (content) {
+            const targetId = this._parseTarget(content, alive.filter(p => p.id !== aiSheriff.id), aiSheriff.id);
+            const target   = this.state.players.find(p => p.id === targetId);
+            if (target) {
+              this.state.investigationHistory[target.id] = target.role === 'mafia' ? 'mafia' : 'town';
+              if (target.role === 'mafia') this.state._sheriffNightKill = target.id;
             }
           }
-        }
-      } catch {}
-    }
-
-    const aiDoctor = alive.find(p => !p.isHuman && p.role === 'doctor');
-    if (aiDoctor && !humanAlreadyActed) {
-      try {
-        const prompt = buildNightDoctorPrompt(aiDoctor, this.state);
-        const docContent = await this._aiDecide(aiDoctor, prompt.system, prompt.user);
-        if (docContent) {
-          const targetId = this._parseTarget(docContent, alive, aiDoctor.id);
-          const target = this.state.players.find(p => p.id === targetId);
-          if (target) this.state.doctorProtectedId = target.id;
-        }
-      } catch {}
-    }
+        } catch {}
+      })(),
+      // Doctor
+      (async () => {
+        if (!aiDoctor) return;
+        try {
+          const prompt     = buildNightDoctorPrompt(aiDoctor, this.state);
+          const docContent = await this._aiDecide(aiDoctor, prompt.system, prompt.user, 1);
+          if (docContent) {
+            const targetId = this._parseTarget(docContent, alive, aiDoctor.id);
+            const target   = this.state.players.find(p => p.id === targetId);
+            if (target) this.state.doctorProtectedId = target.id;
+          }
+        } catch {}
+      })(),
+    ]);
 
     const aiMafia = alive.filter(p => !p.isHuman && p.role === 'mafia');
     if (!this.state._mafiaKillTarget && aiMafia.length > 0) {
@@ -3534,27 +3574,40 @@ export class GameEngine {
       const mafiaNames = aiMafia.map(p => p.name).join(', ');
 
       // ── MAFIA VOTING SYSTEM ───────────────────────────────────────────────
-      // Each mafia votes independently, then we check for majority
+      // Single discussion pass — parse vote target from each member's response
+      // to avoid a separate vote round (cuts API calls in half).
       const votes = new Map(); // targetId -> vote count
+      const discussLog = [];
 
-      // Discussion phase - each mafia shares thoughts (for spectator chat)
       for (const mafioso of aiMafia) {
         try {
-          const prompt = buildMafiaDiscussPrompt(mafioso, this.state, targets, mafiaNames);
-          await this._aiDecide(mafioso, prompt.system, prompt.user);
-        } catch {}
-      }
-
-      // Voting phase - each mafia casts their vote
-      for (const mafioso of aiMafia) {
-        try {
-          const prompt = buildNightMafiaPrompt(mafioso, this.state, targets);
-          const content = await this._aiDecide(mafioso, prompt.system, prompt.user);
+          const prompt  = buildMafiaDiscussPrompt(mafioso, this.state, targets, mafiaNames);
+          const context = discussLog.length
+            ? `\n\nMafia discussion so far:\n${discussLog.map((l, i) => `${i + 1}. ${l}`).join('\n')}`
+            : '\n\nYou open the discussion. Name the exact target you want to hit tonight.';
+          const userMsg = prompt.user + context + '\n\nEnd your message by naming your exact target choice.';
+          const content = await this._aiDecide(mafioso, prompt.system, userMsg, 1);
           if (content) {
+            discussLog.push(`${mafioso.name}: ${content}`);
             const targetId = this._parseTarget(content, targets, mafioso.id);
             if (targetId && targetId !== 'skip') {
               votes.set(targetId, (votes.get(targetId) || 0) + 1);
             }
+          }
+        } catch {}
+      }
+
+      // Fallback: if no targets parsed from discussion, one kill-decision call from lead mafia
+      if (votes.size === 0 && aiMafia.length > 0) {
+        try {
+          const attacker   = aiMafia[0];
+          const killPrompt = buildNightMafiaPrompt(attacker, this.state, targets);
+          const killUser   = killPrompt.user
+            + (discussLog.length ? `\n\nBunker discussion:\n${discussLog.join('\n')}\n\nChoose final target — respond with ONLY the player name.` : '\n\nRespond with ONLY the player name.');
+          const content = await this._aiDecide(attacker, killPrompt.system, killUser, 1);
+          if (content) {
+            const targetId = this._parseTarget(content, targets, attacker.id);
+            if (targetId) votes.set(targetId, 1);
           }
         } catch {}
       }
