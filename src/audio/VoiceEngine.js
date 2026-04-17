@@ -121,6 +121,12 @@ export class VoiceEngine {
     this._ready            = false;
     this._readyQueue       = [];
     this._currentUtterance = null;
+    // Tracks the onComplete callback of the currently playing speech so that
+    // stop() can fire it when TTS is cancelled mid-turn (e.g. mute button).
+    // Without this, the turn's safetyCap had to expire (up to 30s) before the
+    // next speaker could start — and rapid mute/unmute left safetyCap orphaned,
+    // causing advanceTurn() to fire twice and two models to speak simultaneously.
+    this._pendingOnComplete = null;
 
     this._init();
   }
@@ -187,7 +193,9 @@ export class VoiceEngine {
     if (player?.isHuman)      { onComplete?.(); return; }
     if (typeof window === 'undefined' || !window.speechSynthesis) { onComplete?.(); return; }
 
-    this.stop();
+    // Cancel any in-progress speech WITHOUT firing its pending callback —
+    // the new call is intentionally taking over, not completing the old one.
+    this._cancelSilent();
 
     const doSpeak = () => {
       const modelId = player.model;
@@ -196,24 +204,36 @@ export class VoiceEngine {
       const chunks  = _chunkText(text, 180);
 
       const speakChunk = (idx) => {
-        if (idx >= chunks.length) { onComplete?.(); return; }
+        if (idx >= chunks.length) {
+          // All chunks done — fire callback and clear the pending reference
+          const cb = this._pendingOnComplete;
+          this._pendingOnComplete = null;
+          cb?.();
+          return;
+        }
         const utt    = new SpeechSynthesisUtterance(chunks[idx]);
         if (voice) utt.voice = voice;
         utt.lang   = 'en-US';
         utt.pitch  = profile.pitch ?? 1.0;
-        utt.rate   = 1.0;   // always normal speed — rate changes distort voice quality
+        utt.rate   = 1.0;
         utt.volume = 1.0;
         utt.onend  = () => speakChunk(idx + 1);
         utt.onerror = (e) => {
           if (e.error !== 'interrupted') {
+            // Unexpected error — fire callback so the turn can still advance
             console.warn('[VoiceEngine] utterance error:', e.error);
-            onComplete?.();
+            const cb = this._pendingOnComplete;
+            this._pendingOnComplete = null;
+            cb?.();
           }
+          // 'interrupted' is always handled by whoever called stop() / _cancelSilent()
         };
         this._currentUtterance = utt;
         window.speechSynthesis.speak(utt);
       };
 
+      // Register the callback BEFORE starting chunks so stop() can find it
+      this._pendingOnComplete = onComplete;
       speakChunk(0);
     };
 
@@ -221,16 +241,35 @@ export class VoiceEngine {
     else this._readyQueue.push(doSpeak);
   }
 
+  // Cancel current speech and fire the pending onComplete so the game turn
+  // advances cleanly. Used by setEnabled(false) (mute button).
   stop() {
+    this._cancelSilent(true);
+  }
+
+  // Internal cancel — optionally fires the pending callback.
+  // fireCallback=false : used at start of speak() to take over from previous
+  // fireCallback=true  : used by stop() / setEnabled(false) so the turn unblocks
+  _cancelSilent(fireCallback = false) {
+    const cb = fireCallback ? this._pendingOnComplete : null;
+    this._pendingOnComplete = null;
+    this._currentUtterance  = null;
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
-    this._currentUtterance = null;
+    // Fire AFTER cancel() so any browser 'interrupted' onerror fires first
+    // and is correctly ignored (pendingOnComplete is already null by then)
+    if (cb) setTimeout(cb, 0);
   }
 
   setEnabled(enabled) {
     this._enabled = enabled;
-    if (!enabled) this.stop();
+    if (!enabled) {
+      // Muted mid-speech: cancel TTS and fire the pending callback so the
+      // turn's safetyCap is cleared and advanceTurn() can proceed normally.
+      // Without this, the turn would be stuck until safetyCap fired (≤30s).
+      this._cancelSilent(true);
+    }
   }
 
   getVoiceInfo(modelId) {
