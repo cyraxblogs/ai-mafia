@@ -1241,6 +1241,12 @@ export class GameEngine {
   }
 
   async _aiSpeakTurn(player) {
+    // Clear the previous speaker's subtitle/lower-third immediately.
+    // Without this, the old speaker's name stays visible during the entire
+    // API fetch + stream of the new speaker — stale until finalize() runs.
+    this._hideSubtitle();
+    this.specHUD.hideLowerThird();
+
     this.charManager.setThinking(player.id, true);
     this.hud.showThinkingBubble(player.id);
 
@@ -1299,6 +1305,10 @@ export class GameEngine {
         if (!player.isHuman && self.voiceEngine) {
           let ttsCompleted = false;
           let displayTimerFired = false;
+          // One-shot guard — prevents advanceTurn firing twice when:
+          //  • mute cancels TTS (safetyCap fires late after onComplete already ran)
+          //  • or rapid mute/unmute causes both paths to open simultaneously
+          let _advancedOnce = false;
 
           // Hard cap: never hold the turn longer than speakTime regardless of TTS
           const maxWaitMs = (self.state.speakTime ?? 30) * 1000;
@@ -1306,6 +1316,8 @@ export class GameEngine {
           const advanceTurn = () => {
             // Only advance once, whichever fires second (display timer OR tts end)
             if (!ttsCompleted || !displayTimerFired) return;
+            if (_advancedOnce) return;
+            _advancedOnce = true;
             self.charManager.setSpeaking(player.id, false);
             self.hud.hideTimer();
             if (self.state?.phase === 'DAY') self._nextSpeaker();
