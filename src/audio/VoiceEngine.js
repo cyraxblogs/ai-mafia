@@ -73,6 +73,7 @@ const MODEL_VOICE_PROFILES = {
   'openai/gpt-5.4-nano-2026-03-17':       { gender: 'm', pitch: 1.08 },
 
   // ── Anthropic Claude family ───────────────────────────────────────────────
+  'anthropic/claude-opus-4-7':            { gender: 'f', pitch: 0.82 },  // deepest/most deliberate opus
   'anthropic/claude-opus-4-6':            { gender: 'f', pitch: 0.86 },
   'anthropic/claude-sonnet-4-6':          { gender: 'f', pitch: 0.96 },
   'anthropic/claude-sonnet-4-5':          { gender: 'f', pitch: 1.04 },
@@ -108,6 +109,7 @@ const MODEL_VOICE_PROFILES = {
   'minimax/minimax-m2.5':                 { gender: 'f', pitch: 1.10 },
 
   // ── GLM / Zhipu ───────────────────────────────────────────────────────────
+  'zai-org/glm-5.1':                      { gender: 'n', pitch: 0.94 },  // flagship — slightly deeper than glm-5
   'zai-org/glm-5':                        { gender: 'n', pitch: 1.00 },
   'zai-org/glm-5-turbo':                  { gender: 'n', pitch: 1.06 },
   'zai-org/glm-4.7':                      { gender: 'n', pitch: 0.91 },
@@ -265,10 +267,10 @@ export class VoiceEngine {
   setEnabled(enabled) {
     this._enabled = enabled;
     if (!enabled) {
-      // Muted mid-speech: cancel TTS and fire the pending callback so the
-      // turn's safetyCap is cleared and advanceTurn() can proceed normally.
-      // Without this, the turn would be stuck until safetyCap fired (≤30s).
-      this._cancelSilent(true);
+      // Cancel audio only. Do NOT fire _pendingOnComplete — the turn's display
+      // timer is still running and will advance the game at the right time.
+      // The safetyCap in engine.js fires 2s after display window closes as backup.
+      this._cancelSilent(false);
     }
   }
 
