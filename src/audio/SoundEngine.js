@@ -56,7 +56,10 @@ export class SoundEngine {
     if (!this.ctx) return false;
     if (this.ctx.state === 'running') return true;
     try { await this.ctx.resume(); } catch {}
-    return this.ctx?.state === 'running';
+    const ok = this.ctx?.state === 'running';
+    // Drain any queued sounds now that the context is running again
+    if (ok) this._drainPending();
+    return ok;
   }
 
   _resume() { return this.unlock(); }
@@ -96,7 +99,7 @@ export class SoundEngine {
   }
 
   playUi(soundName) {
-    if (this.muted || !this.ctx) return;
+    if (this.muted) return;
     const fn = this[`_${soundName}`];
     if (!fn) return;
     // Dedup: block same sound within 80 ms to prevent double-fires from
@@ -110,6 +113,7 @@ export class SoundEngine {
     // No ctx yet — queue, will drain when first gesture creates context
     if (!this.ctx) { this._queueSound(soundName, fn); return; }
     if (this.ctx.state === 'running') { fn.call(this); return; }
+    // Context suspended (e.g. tab was backgrounded) — queue and nudge resume
     this._queueSound(soundName, fn);
     this.unlock();
   }
