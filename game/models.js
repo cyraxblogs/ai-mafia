@@ -10,6 +10,7 @@ export const MODEL_META = {
   'openai/gpt-5.4-nano-2026-03-17':       { displayName: 'GPT-5.4 Nano',         color: '#096a50', key: 'chatgpt'  },
 
   // ── Anthropic ─────────────────────────────────────────────────────────────
+  'anthropic/claude-opus-4-7':            { displayName: 'Claude Opus 4.7',      color: '#7a2410', key: 'claude'   },
   'anthropic/claude-opus-4-6':            { displayName: 'Claude Opus 4.6',      color: '#a33a1c', key: 'claude'   },
   'anthropic/claude-sonnet-4-6':          { displayName: 'Claude Sonnet 4.6',    color: '#c45a30', key: 'claude'   },
   'anthropic/claude-sonnet-4-5':          { displayName: 'Claude Sonnet 4.5',    color: '#cc6035', key: 'claude'   },
@@ -45,6 +46,7 @@ export const MODEL_META = {
   'minimax/minimax-m2.5':                { displayName: 'MiniMax M2.5',         color: '#3d0d6e', key: 'minimax'  },
 
   // ── GLM / Zhipu — prefix MUST be zai-org/ (confirmed from Commonstack docs)
+  'zai-org/glm-5.1':                    { displayName: 'GLM-5.1',              color: '#2e6ef0', key: 'glm'      },
   'zai-org/glm-5':                       { displayName: 'GLM-5',                color: '#3b5bf5', key: 'glm'      },
   'zai-org/glm-5-turbo':                 { displayName: 'GLM-5 Turbo',          color: '#2a4ae0', key: 'glm'      },
   'zai-org/glm-4.7':                     { displayName: 'GLM-4.7',              color: '#1e3acc', key: 'glm'      },
@@ -89,12 +91,14 @@ export const STATIC_MODELS = {
   ],
   premium: [
     'openai/gpt-5.4-2026-03-05',
+    'anthropic/claude-opus-4-7',
     'anthropic/claude-opus-4-6',
     'google/gemini-3.1-pro-preview',
     'moonshotai/kimi-k2-thinking',
     'minimax/minimax-m2.7',
     'qwen/qwen3-vl-235b-a22b-instruct',
     'qwen/qwen3-coder-480b-a35b-instruct',
+    'zai-org/glm-5.1',
   ],
 };
 
