@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -483,6 +483,55 @@
       text-align: center;
       line-height: 1.6;
     }
+
+    /* ── FAQ ── */
+    .faq-section {
+      position: relative; z-index: 10;
+      padding: 4rem 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .faq-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .faq-item {
+      background: rgba(26,23,20,0.8);
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.25s;
+    }
+    .faq-item.open { border-color: rgba(201,168,76,0.4); }
+    .faq-q {
+      width: 100%; text-align: left;
+      background: none; border: none; cursor: pointer;
+      padding: 1.1rem 1.4rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem;
+      font-family: 'Cinzel', serif;
+      font-size: 0.88rem;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      line-height: 1.4;
+    }
+    .faq-q:hover { color: var(--gold-light); }
+    .faq-chevron {
+      flex-shrink: 0; width: 16px; height: 16px;
+      color: var(--gold);
+      transition: transform 0.3s ease;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-a {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.2s;
+      padding: 0 1.4rem;
+    }
+    .faq-item.open .faq-a { max-height: 500px; padding: 0 1.4rem 1.2rem; }
+    .faq-a p {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem; color: var(--text-muted);
+      line-height: 1.75; margin: 0;
+    }
+    .faq-a a { color: var(--gold); text-decoration: none; }
+    .faq-a a:hover { text-decoration: underline; }
 
     /* ── FOOTER ── */
     .footer {
@@ -2450,6 +2499,87 @@
     </div>
   </section>
 
+  <!-- FAQ -->
+  <section class="faq-section">
+    <div class="section-title">FREQUENTLY ASKED</div>
+    <div class="section-sub">Everything you need to know before entering the village</div>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Why Commonstack?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>Commonstack is a single AI API gateway — one API key, one endpoint, every frontier model. Instead of juggling separate accounts for OpenAI, Anthropic, Google, DeepSeek, xAI and more, you authenticate once and call whichever model you want. AI Mafia needs to pit radically different models against each other in the same game, which would be impossible if each model required its own billing, key management and API contract. Commonstack makes that trivial. Get your key at <a href="https://commonstack.ai" target="_blank">commonstack.ai</a>.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Do the AI models actually know they're playing Mafia?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>Yes — fully. Every model is given a detailed system prompt at the start of the game that explains its secret role, the full game rules, and which players are alive. During the day phase each model also receives the complete spoken chat history so it can form strategies based on what everyone else has said. The Mafia are told who their partners are. The Sheriff tracks all of its past investigation results. Nothing is hidden from the model that its role would actually know.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can the Mafia actually coordinate with each other at night?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>Yes. Every night the Mafia are placed in a private "bunker" session where each member speaks in turn, building a shared discussion log. Each Mafia member sees what the others said before casting their vote, so they can genuinely align on a target — or disagree. The full discussion is visible to spectators via the night switcher panel but is completely hidden from town-aligned players.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What happens if a model fails or times out mid-game?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>The game keeps going. If a model's API call times out or returns an error, that player is given a short placeholder line (like "[connection issue] I cannot respond this turn") and the turn advances automatically. Smaller fast models like Haiku or Gemini Flash get a 35-second window; large reasoning models get up to 90 seconds. If a model is entirely unreachable for voting or night actions, the game skips that decision silently so no one gets stuck waiting indefinitely.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Why does the Sheriff's Kill Shot kill both players if it's wrong?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>It's a balance mechanic. The Sheriff already has a massive advantage: every night they learn whether their chosen suspect is Mafia or Town alignment. Without a heavy downside, the Sheriff could just systematically investigate the whole village until all Mafia are identified, then call for a vote with proof. The mutual-death penalty forces the Sheriff to be genuinely confident before pulling the trigger, which keeps the Mafia relevant deep into the game.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Why does the night phase feel longer when I'm playing vs watching?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>In spectator mode the AI role actions (Mafia discussion, Sheriff investigate, Doctor protect) run as a live-streamed cinematic — you see tokens appear in real time while the camera cuts between locations. In player mode the same calls happen silently in the background with no streaming, so you only see the result after they finish. The underlying API calls are identical; the difference is purely presentation. The game is actively optimised to keep night phase as short as possible without cutting any actions.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Are the in-game conversations saved or stored anywhere?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>No. All game state lives entirely in memory in your browser tab. Nothing is written to any database or sent to any server other than the Commonstack API calls needed to generate each response. If you close the tab or refresh, the game is gone. Your API key is never logged — it's passed directly from your browser to Commonstack on each call and discarded immediately after.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How many speaking rounds happen each day?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>By default every alive player speaks once per day before voting begins. In longer games (10+ players) the engine automatically caps it at two rounds to keep days from running too long. After all speaking rounds finish, every alive player casts a vote — or abstains — and the player with the most votes is eliminated. Ties result in no elimination.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can I play on mobile?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-a"><p>The game runs in any modern browser and the UI is responsive, but the 3D voxel village is GPU-intensive. Mid-range and above phones handle spectator mode well. Playing as a human is fine too since the action panels are touch-friendly. If frame rate drops badly, the game auto-reduces shadow quality and pixel ratio to compensate. For the best experience a laptop or desktop with a dedicated GPU is recommended.</p></div>
+      </div>
+
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer class="footer">
     <p>Powered by <a href="https://commonstack.ai" target="_blank">Commonstack AI</a> - The AI API Hub</p>
@@ -2778,6 +2908,14 @@
     const soundName = trigger.dataset.uiSound;
     if (soundName) playUiSound(soundName);
   }, true);
+
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    // Close all others
+    document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
 
   function chooseMode(mode) {
     document.getElementById('mode-select-card').style.display  = mode ? 'none' : 'block';
