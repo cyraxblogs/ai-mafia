@@ -436,8 +436,8 @@ class SpectatorHUD {
 
 // ── Client-side model timeout helpers (mirrors server.js logic) ──────────────
 // These must stay in sync with LARGE_MODEL_SLUGS / THINKING_MODEL_SLUGS in server.js
-const _CLIENT_LARGE_SLUGS    = ['235b','397b','480b','kimi-k2-thinking'];
-const _CLIENT_THINKING_SLUGS = ['kimi-k2','deepseek-r1','deepseek-r2','qwq','qvq','fast-reasoning','qwen3','glm-5','glm-4','gemini-3.1-pro','minimax'];
+const _CLIENT_LARGE_SLUGS    = ['235b','397b','480b','kimi-k2-thinking','glm-5.1'];
+const _CLIENT_THINKING_SLUGS = ['claude-opus-4-7','kimi-k2','deepseek-r1','deepseek-r2','qwq','qvq','fast-reasoning','qwen3','glm-5','glm-4','gemini-3.1-pro','minimax'];
 const DAY_VOTE_LIMIT_MS      = 45000;
 function _isLargeModel(model)    { const s = model.toLowerCase(); return _CLIENT_LARGE_SLUGS.some(k => s.includes(k)); }
 function _isThinkingModel(model) { const s = model.toLowerCase(); return _CLIENT_THINKING_SLUGS.some(k => s.includes(k)); }
@@ -1310,23 +1310,23 @@ export class GameEngine {
           //  • or rapid mute/unmute causes both paths to open simultaneously
           let _advancedOnce = false;
 
-          // Hard cap: never hold the turn longer than speakTime regardless of TTS
-          const maxWaitMs = (self.state.speakTime ?? 30) * 1000;
+          const displayTime = Math.min(
+            self.state.speakTime,
+            Math.max(3, Math.ceil(responseText.length / 25))
+          );
 
           const advanceTurn = () => {
-            // Only advance once, whichever fires second (display timer OR tts end)
+            // Both gates must be met before advancing
             if (!ttsCompleted || !displayTimerFired) return;
             if (_advancedOnce) return;
             _advancedOnce = true;
             self.charManager.setSpeaking(player.id, false);
             self.hud.hideTimer();
-            if (self.state?.phase === 'DAY') self._nextSpeaker();
+            // 1.5s pause after voice finishes before cutting to next speaker
+            setTimeout(() => {
+              if (self.state?.phase === 'DAY') self._nextSpeaker();
+            }, 1500);
           };
-
-          const displayTime = Math.min(
-            self.state.speakTime,
-            Math.max(3, Math.ceil(responseText.length / 25))
-          );
 
           // Display timer — minimum time the bubble stays visible
           setTimeout(() => {
@@ -1334,11 +1334,13 @@ export class GameEngine {
             advanceTurn();
           }, displayTime * 1000);
 
-          // Hard safety cap — if TTS never fires onComplete, advance anyway
+          // Safety cap fires 2s after the display window closes.
+          // This handles mute (TTS cancelled, onComplete never fires) without
+          // a 30s wait. TTS finishing naturally clears this via clearTimeout.
           const safetyCap = setTimeout(() => {
             ttsCompleted = true;
             advanceTurn();
-          }, maxWaitMs);
+          }, displayTime * 1000 + 2000);
 
           self.voiceEngine.speak(player, responseText, () => {
             clearTimeout(safetyCap);
