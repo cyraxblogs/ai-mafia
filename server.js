@@ -194,6 +194,7 @@ function stripParamsForModel(model, params) {
 // If max_tokens is too low, the model burns all tokens on CoT and returns nothing.
 // Fix: large budgets for thinking models so there's room for the actual answer.
 const THINKING_MODEL_SLUGS = [
+  'claude-opus-4-7',  // anthropic/claude-opus-4-7 — hybrid reasoning, produces more output tokens
   'kimi-k2',          // moonshotai/kimi-k2-thinking, kimi-k2.5, kimi-k2-0905
   'deepseek-r1',      // deepseek/deepseek-r1-0528
   'deepseek-r2',      // deepseek/deepseek-r2 (if re-added)
@@ -201,7 +202,7 @@ const THINKING_MODEL_SLUGS = [
   'qvq',              // Qwen QVQ series
   'fast-reasoning',   // x-ai/grok-4.1-fast-reasoning — reasoning model, needs token room
   'qwen3',            // qwen3.5-397b, qwen3-vl-235b, qwen3-coder-480b all emit <think>
-  'glm-5',            // zai-org/glm-5 and glm-5-turbo wrap answer in <think>…</think>
+  'glm-5',            // zai-org/glm-5, glm-5-turbo, glm-5.1 all wrap answer in <think>…</think>
   'glm-4',            // zai-org/glm-4.7 same behaviour
   'gemini-3.1-pro',   // gemini-3.1-pro-preview is a reasoning model — burns budget on CoT
                       // without 2048 token budget it exhausts tokens before answering
@@ -216,6 +217,7 @@ const LARGE_MODEL_SLUGS = [
   '397b',           // qwen/qwen3.5-397b-a17b
   '480b',           // qwen/qwen3-coder-480b-a35b-instruct
   'kimi-k2-thinking', // moonshotai/kimi-k2-thinking — very long CoT, needs 90s
+  'glm-5.1',        // zai-org/glm-5.1 — 744B MoE, thinking enabled by default, needs 90s
 ];
 
 function isThinkingModel(model) {
