@@ -99,7 +99,9 @@ export class HUD {
       const logoInner = `<canvas class="pli-logo-canvas" id="pli_logo_${p.id}" width="40" height="40"></canvas>`;
 
       const statusHtml = p.alive
-        ? `<span class="pli-status-dot alive"></span>`
+        ? `<svg class="pli-ecg" viewBox="0 0 50 16" width="50" height="16" xmlns="http://www.w3.org/2000/svg">
+            <polyline class="pli-ecg-line" points="0,8 8,8 10,5 12,8 16,8 17,10 18,1 20,15 22,8 40,8 50,8 58,8 60,5 62,8 66,8 67,10 68,1 70,15 72,8 90,8 100,8"/>
+           </svg>`
         : `<span class="pli-status-dead">${ICON_SKULL(14)}</span>`;
 
       item.innerHTML = `
@@ -125,10 +127,12 @@ export class HUD {
     const item = document.getElementById(`pli_${playerId}`);
     if (!item) return;
     item.classList.add('dead');
-    const dot = item.querySelector('.pli-status-dot');
+    const dot = item.querySelector('.pli-status-dot, .pli-ecg');
     if (dot) {
-      dot.className = 'pli-status-dead';
-      dot.innerHTML = ICON_SKULL(14);
+      const dead = document.createElement('span');
+      dead.className = 'pli-status-dead';
+      dead.innerHTML = ICON_SKULL(14);
+      dot.replaceWith(dead);
     }
   }
 
