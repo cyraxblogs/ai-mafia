@@ -752,19 +752,32 @@
       margin-top: 2px;
       font-weight: 700;
     }
-    /* Status dot */
-    .pli-status-dot {
-      width: 8px; height: 8px; flex-shrink: 0;
-      border-radius: 50%;
+    /* Status — ECG heartbeat line */
+    .pli-ecg {
+      display: block;
+      flex-shrink: 0;
+      overflow: hidden;
     }
-    .pli-status-dot.alive {
-      background: #4ade80;
-      box-shadow: 0 0 5px #4ade80;
-      animation: pliPulse 2s infinite;
+    .pli-ecg-line {
+      fill: none;
+      stroke: #4ade80;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      animation: pliECGScroll 2s linear infinite;
+    }
+    @keyframes pliECGScroll {
+      from { transform: translateX(0px); }
+      to   { transform: translateX(-50px); }
     }
     .pli-status-dot.dead { font-size: 0.7rem; width: auto; height: auto; }
-    @keyframes pliPulse {
-      0%,100% { opacity:1; } 50% { opacity:0.4; }
+    @keyframes pliHeartbeat {
+      0%   { transform: scale(1);    box-shadow: 0 0 4px #f87171; }
+      14%  { transform: scale(1.5);  box-shadow: 0 0 10px #f87171, 0 0 4px #fff6; }
+      28%  { transform: scale(1.1);  box-shadow: 0 0 6px #f87171; }
+      42%  { transform: scale(1.45); box-shadow: 0 0 9px #f87171, 0 0 3px #fff5; }
+      70%  { transform: scale(1);    box-shadow: 0 0 4px #f87171; }
+      100% { transform: scale(1);    box-shadow: 0 0 4px #f87171; }
     }
 
     /* Speaking turn input */
@@ -2101,8 +2114,12 @@
       animation: specDotPulse 1.4s infinite;
     }
     @keyframes specDotPulse {
-      0%,100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: 0.5; transform: scale(0.7); }
+      0%   { transform: scale(1);    opacity: 1; }
+      14%  { transform: scale(1.6);  opacity: 1; }
+      28%  { transform: scale(1.1);  opacity: 0.9; }
+      42%  { transform: scale(1.55); opacity: 1; }
+      70%  { transform: scale(1);    opacity: 1; }
+      100% { transform: scale(1);    opacity: 1; }
     }
 
 
