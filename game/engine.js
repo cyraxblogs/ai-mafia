@@ -2090,11 +2090,9 @@ export class GameEngine {
     }
   }
 
-  // Compute debate-style face-to-face formation for mafia around planning table.
-  // Instead of a circle (amphitheater style), mafia split into two opposing sides:
-  //   FRONT side  (z ≈ 44–45): faces NORTH (+Z) toward back group
-  //   BACK  side  (z ≈ 51–52): faces SOUTH (-Z) toward front group
-  // This creates a proper conference-table debate feel.
+  // Compute face-to-face (2 mafia) or circular (3+ mafia) formation inside bunker.
+  // 2 mafia: debate style, directly across the table facing each other.
+  // 3+ mafia: full circle around table center, everyone faces inward — same as daytime.
   // Returns an array of { position: Vector3, rotation: number } matching
   // the computeSeats() shape so the rest of the engine works unchanged.
   _computeMafiaCirclePositions(mafiaPlayers) {
@@ -2105,70 +2103,46 @@ export class GameEngine {
     const CX = -3, CZ = 48;
     const MAFIA_Y = 2.1;
 
-    // ── Helper to build a seat record ────────────────────────────────────
     const seat = (x, z, ry) => ({
       position: new THREE.Vector3(x, MAFIA_Y, z),
-      rotation:  ry,
-      index: 0, // filled below
+      rotation: ry,
+      index: 0,
     });
-
-    // FIX: All mafia chars now face SOUTH (rotation=0 = +Z direction) toward the
-    // main spectator cameras which are placed south of the table (z=54-62 looking north).
-    // The old FACE_SOUTH=PI made back-row chars face north (away from camera), showing
-    // only their dark backs in every wide/table/thinking shot.
-    // The "debate at a table" read is preserved by position; both rows are now visible.
-    const FACE_NORTH = 0;   // both rows face +Z (south) — toward the spectator cameras
-    const FACE_SOUTH = 0;   // same as FACE_NORTH — back row also faces south camera
 
     let slots = [];
 
     if (n === 1) {
-      // Solo mafia: stand at front-centre, face camera (south)
-      slots = [ seat(CX, CZ + 3.5, FACE_SOUTH) ];
+      // Solo: stand at centre facing camera
+      slots = [ seat(CX, CZ + 3.5, 0) ];
 
     } else if (n === 2) {
-      // Two mafia directly across the table from each other
+      // Exactly two — face-to-face across the table.
+      // Front (south, z < CZ): faces north (+Z) toward back → rotation = 0
+      // Back  (north, z > CZ): faces south (-Z) toward front → rotation = Math.PI
       slots = [
-        seat(CX,       CZ - 3.5, FACE_NORTH),  // front, faces back player
-        seat(CX,       CZ + 3.5, FACE_SOUTH),  // back,  faces front player
-      ];
-
-    } else if (n === 3) {
-      // Triangle: one at front-centre, two at back spread
-      slots = [
-        seat(CX,       CZ - 3.5, FACE_NORTH),  // front-centre
-        seat(CX - 2.2, CZ + 3.5, FACE_SOUTH),  // back-left
-        seat(CX + 2.2, CZ + 3.5, FACE_SOUTH),  // back-right
-      ];
-
-    } else if (n === 4) {
-      // Classic two-vs-two across the table, slightly staggered
-      slots = [
-        seat(CX - 2.0, CZ - 3.5, FACE_NORTH),  // front-left
-        seat(CX + 2.0, CZ - 3.5, FACE_NORTH),  // front-right
-        seat(CX - 2.0, CZ + 3.5, FACE_SOUTH),  // back-left
-        seat(CX + 2.0, CZ + 3.5, FACE_SOUTH),  // back-right
+        seat(CX, CZ - 3.5, 0),           // front, faces back player
+        seat(CX, CZ + 3.5, Math.PI),      // back,  faces front player
       ];
 
     } else {
-      // 5+ mafia: fill both sides, distributing evenly.
-      // Front gets ceil(n/2), back gets floor(n/2).
-      const frontCount = Math.ceil(n / 2);
-      const backCount  = n - frontCount;
-      const frontSpacing = Math.min(2.4, 8 / Math.max(1, frontCount - 1));
-      const backSpacing  = Math.min(2.4, 8 / Math.max(1, backCount  - 1));
+      // 3+ mafia: evenly-spaced circle around the table, everyone faces inward.
+      // Mirrors the daytime computeSeats() logic, centered on the bunker table.
+      const CHAR_SPACING = 3.9;
+      const MIN_RADIUS   = 4.5; // tighter than outdoor arena — bunker is smaller
+      const radius = Math.max(MIN_RADIUS, (n * CHAR_SPACING) / (2 * Math.PI));
+      const startAngle = -Math.PI / 2;
 
-      for (let i = 0; i < frontCount; i++) {
-        const xOff = frontCount === 1 ? 0 : -((frontCount - 1) * frontSpacing / 2) + i * frontSpacing;
-        slots.push(seat(CX + xOff, CZ - 3.5, FACE_NORTH));
-      }
-      for (let i = 0; i < backCount; i++) {
-        const xOff = backCount === 1 ? 0 : -((backCount - 1) * backSpacing / 2) + i * backSpacing;
-        slots.push(seat(CX + xOff, CZ + 3.5, FACE_SOUTH));
+      for (let i = 0; i < n; i++) {
+        const angle  = startAngle + (i / n) * Math.PI * 2;
+        const x      = CX + radius * Math.cos(angle);
+        const z      = CZ + radius * Math.sin(angle);
+        // Face inward toward table center (same formula as computeSeats)
+        const facingY = -(angle + Math.PI / 2);
+        slots.push(seat(x, z, facingY));
       }
     }
 
-    // Store for use by debate cameras, and stamp index
+    // Stamp index and store for debate cameras
     this._mafiaDebatePositions = slots.map((s, i) => ({ ...s, index: i }));
     return this._mafiaDebatePositions;
   }
