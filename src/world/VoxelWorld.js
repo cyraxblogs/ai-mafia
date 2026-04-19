@@ -127,7 +127,7 @@ export class VoxelWorld {
   setNightModeLegacy(isNight) {
     this._isNight = isNight;
     if (this.matEmit) {
-      this.matEmit.emissiveIntensity = isNight ? 2.8 : 0.04;
+      this.matEmit.emissiveIntensity = isNight ? 1.4 : 0.04;
     }
     for (const mat of this._emissivePropMats) {
       mat.emissiveIntensity = isNight ? 2.2 : 0.02;
