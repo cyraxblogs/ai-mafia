@@ -554,9 +554,22 @@ export class VoxelWorld {
                   needFlip = (aoVals[0] + aoVals[2]) < (aoVals[1] + aoVals[3]);
                 }
 
+                // Elevated building tops are the main place where per-corner AO turns a
+                // single block top into two obvious triangles. Flatten those faces to a
+                // single face-wide AO value so rooftops stay clean without adding geometry.
+                const flattenElevatedTopFace = f === 2 && y >= 8 && !isEmissive && !isTrans;
+                const flattenedTopAo = flattenElevatedTopFace
+                  ? (
+                      AO_CURVE[aoVals[0]] +
+                      AO_CURVE[aoVals[1]] +
+                      AO_CURVE[aoVals[2]] +
+                      AO_CURVE[aoVals[3]]
+                    ) * 0.25
+                  : null;
+
                 for (let vi = 0; vi < 4; vi++) {
                   const [vx, vy, vz] = FACE_VERTS[f][vi];
-                  const ao = AO_CURVE[isEmissive || isTrans ? 3 : aoVals[vi]];
+                  const ao = flattenedTopAo ?? AO_CURVE[isEmissive || isTrans ? 3 : aoVals[vi]];
                   const baseR = cr * ao;
                   const baseG = cg * ao;
                   const baseB = cb * ao;

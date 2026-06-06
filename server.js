@@ -134,10 +134,12 @@ function normaliseMessages(model, msgs) {
 // OpenAI o1/o3/o4 reject the `temperature` param (they control sampling internally).
 // Through Commonstack proxy, sending temperature to o-series causes a 400 error.
 // ALL gpt-5.4 variants (base, mini, nano) also reject temperature.
+// gpt-5.5 is handled the same way here to match the current GPT-5.x integration path.
 // NOTE: x-ai/grok-4.1-fast-reasoning is NOT o-series — it accepts temperature.
 const O_SERIES_PREFIXES = [
   'openai/o1', 'openai/o3', 'openai/o4',
   'openai/gpt-5.4',   // covers gpt-5.4-2026-03-05, gpt-5.4-mini-2026-03-17, gpt-5.4-nano-2026-03-17
+  'openai/gpt-5.5',
 ];
 const TEMPERATURELESS_PREFIXES = [
   ...O_SERIES_PREFIXES,
@@ -145,7 +147,7 @@ const TEMPERATURELESS_PREFIXES = [
 ];
 
 // ── max_completion_tokens models ──────────────────────────────────────────────
-// Newer OpenAI models (ALL gpt-5.4 variants and o-series) reject `max_tokens` with:
+// Newer OpenAI models (ALL gpt-5.4 variants, gpt-5.5, and o-series) reject `max_tokens` with:
 //   "this model is not supported MaxTokens, please use MaxCompletionTokens"
 // We rename the param for these slugs before sending to the API.
 // FIX: was only 'openai/gpt-5.4-2026-03-05' (base slug) — mini and nano variants
@@ -153,6 +155,7 @@ const TEMPERATURELESS_PREFIXES = [
 //      max_tokens and getting 400s. Broadened to 'openai/gpt-5.4' prefix instead.
 const MAX_COMPLETION_TOKENS_PREFIXES = [
   'openai/gpt-5.4',   // covers base, mini, and nano
+  'openai/gpt-5.5',
   'openai/o1', 'openai/o3', 'openai/o4',
 ];
 

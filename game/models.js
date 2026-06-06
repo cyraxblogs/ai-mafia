@@ -1,10 +1,12 @@
 // game/models.js — GROUND TRUTH: all slugs verified directly from Commonstack API
 // Last synced: March 2026 from user-provided ALL_MODEL_SLUGS.txt
+// Added May 1, 2026 from user-provided Commonstack slugs.
 // RULE: Every slug here must exist EXACTLY as shown. Provider prefix is critical.
 
 export const MODEL_META = {
 
   // ── OpenAI ────────────────────────────────────────────────────────────────
+  'openai/gpt-5.5':                       { displayName: 'GPT-5.5',              color: '#0a8f6d', key: 'chatgpt'  },
   'openai/gpt-5.4-2026-03-05':            { displayName: 'GPT-5.4',              color: '#10a37f', key: 'chatgpt'  },
   'openai/gpt-5.4-mini-2026-03-17':       { displayName: 'GPT-5.4 Mini',         color: '#0d9070', key: 'chatgpt'  },
   'openai/gpt-5.4-nano-2026-03-17':       { displayName: 'GPT-5.4 Nano',         color: '#096a50', key: 'chatgpt'  },
@@ -26,11 +28,14 @@ export const MODEL_META = {
   'x-ai/grok-4-1-fast-non-reasoning':    { displayName: 'Grok 4.1 Fast',        color: '#2a2a2a', key: 'grok'     },
 
   // ── DeepSeek ──────────────────────────────────────────────────────────────
+  'deepseek/deepseek-v4-flash':          { displayName: 'DeepSeek V4 Flash',    color: '#6d8cff', key: 'deepseek' },
+  'deepseek/deepseek-v4-pro':            { displayName: 'DeepSeek V4 Pro',      color: '#3452e6', key: 'deepseek' },
   'deepseek/deepseek-v3.2':              { displayName: 'DeepSeek V3.2',        color: '#4D6BFE', key: 'deepseek' },
   'deepseek/deepseek-v3.1':              { displayName: 'DeepSeek V3.1',        color: '#3d5bee', key: 'deepseek' },
   'deepseek/deepseek-r1-0528':           { displayName: 'DeepSeek R1',          color: '#2244cc', key: 'deepseek' },
 
   // ── Moonshot / Kimi ───────────────────────────────────────────────────────
+  'moonshotai/kimi-k2.6':                { displayName: 'Kimi K2.6',            color: '#202046', key: 'kimi'     },
   'moonshotai/kimi-k2-thinking':         { displayName: 'Kimi K2 Thinking',     color: '#0d0d2b', key: 'kimi'     },
   'moonshotai/kimi-k2.5':                { displayName: 'Kimi K2.5',            color: '#1a1a3e', key: 'kimi'     },
   'moonshotai/kimi-k2-0905':             { displayName: 'Kimi K2',              color: '#252550', key: 'kimi'     },
@@ -70,6 +75,7 @@ export const STATIC_MODELS = {
     'google/gemini-3-flash-preview',
     'google/gemini-3.1-flash-lite-preview',
     'x-ai/grok-4-1-fast-non-reasoning',
+    'deepseek/deepseek-v4-flash',
     'deepseek/deepseek-v3.1',
     'deepseek/deepseek-r1-0528',
     'moonshotai/kimi-k2-0905',
@@ -82,7 +88,9 @@ export const STATIC_MODELS = {
     'anthropic/claude-sonnet-4-6',
     'google/gemini-3.1-pro-preview',
     'x-ai/grok-4.1-fast-reasoning',
+    'deepseek/deepseek-v4-pro',
     'deepseek/deepseek-v3.2',
+    'moonshotai/kimi-k2.6',
     'moonshotai/kimi-k2.5',
     'minimax/minimax-m2',
     'zai-org/glm-5',
@@ -90,6 +98,7 @@ export const STATIC_MODELS = {
     'qwen/qwen3.5-397b-a17b',
   ],
   premium: [
+    'openai/gpt-5.5',
     'openai/gpt-5.4-2026-03-05',
     'anthropic/claude-opus-4-7',
     'anthropic/claude-opus-4-6',

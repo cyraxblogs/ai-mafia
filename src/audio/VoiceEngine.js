@@ -68,6 +68,7 @@ function _genderOf(v) {
 const MODEL_VOICE_PROFILES = {
 
   // ── OpenAI GPT-5.4 family ─────────────────────────────────────────────────
+  'openai/gpt-5.5':                       { gender: 'm', pitch: 0.76 },
   'openai/gpt-5.4-2026-03-05':            { gender: 'm', pitch: 0.80 },
   'openai/gpt-5.4-mini-2026-03-17':       { gender: 'm', pitch: 0.92 },
   'openai/gpt-5.4-nano-2026-03-17':       { gender: 'm', pitch: 1.08 },
@@ -89,11 +90,14 @@ const MODEL_VOICE_PROFILES = {
   'x-ai/grok-4-1-fast-non-reasoning':     { gender: 'm', pitch: 0.82 },
 
   // ── DeepSeek ─────────────────────────────────────────────────────────────
+  'deepseek/deepseek-v4-flash':           { gender: 'm', pitch: 0.98 },
+  'deepseek/deepseek-v4-pro':             { gender: 'm', pitch: 0.82 },
   'deepseek/deepseek-v3.2':               { gender: 'm', pitch: 0.88 },
   'deepseek/deepseek-v3.1':               { gender: 'm', pitch: 0.95 },
   'deepseek/deepseek-r1-0528':            { gender: 'm', pitch: 0.84 },
 
   // ── Moonshot / Kimi ───────────────────────────────────────────────────────
+  'moonshotai/kimi-k2.6':                 { gender: 'f', pitch: 1.00 },
   'moonshotai/kimi-k2-thinking':          { gender: 'f', pitch: 1.10 },
   'moonshotai/kimi-k2.5':                 { gender: 'f', pitch: 1.03 },
   'moonshotai/kimi-k2-0905':              { gender: 'f', pitch: 0.97 },
