@@ -265,8 +265,10 @@ export class VoxelWorld {
     for (const entry of this._bakedColorMeshes) {
       const { attr, base, staticLight, lanternLight } = entry;
       const colors = attr.array;
+      const packedColor = attr.normalized && colors instanceof Uint8Array;
       for (let i = 0; i < colors.length; i++) {
-        colors[i] = Math.min(1, base[i] + staticLight[i] + lanternLight[i] * visualAlpha);
+        const value = Math.min(1, base[i] + staticLight[i] + lanternLight[i] * visualAlpha);
+        colors[i] = packedColor ? Math.round(value * 255) : value;
       }
       attr.needsUpdate = true;
     }
@@ -365,6 +367,20 @@ export class VoxelWorld {
       const c = new THREE.Color(hex);
       colorCache.set(hex, [c.r, c.g, c.b]);
       return [c.r, c.g, c.b];
+    };
+
+    const makePackedColorAttribute = (colors) => {
+      const packed = new Uint8Array(colors.length);
+      for (let i = 0; i < colors.length; i++) {
+        packed[i] = Math.round(Math.min(1, Math.max(0, colors[i])) * 255);
+      }
+      return new THREE.Uint8BufferAttribute(packed, 3, true);
+    };
+
+    const makePackedNormalAttribute = (normals) => {
+      const packed = new Int8Array(normals.length);
+      for (let i = 0; i < normals.length; i++) packed[i] = normals[i];
+      return new THREE.Int8BufferAttribute(packed, 3);
     };
 
     // Shared materials — ONE instance per type for ALL 64 chunks.
@@ -601,9 +617,9 @@ export class VoxelWorld {
           if (grp.idx.length === 0) return;
           const geo = new THREE.BufferGeometry();
           geo.setAttribute('position', new THREE.Float32BufferAttribute(grp.pos, 3));
-          const colorAttr = new THREE.Float32BufferAttribute(grp.col, 3);
+          const colorAttr = makePackedColorAttribute(grp.col);
           geo.setAttribute('color', colorAttr);
-          geo.setAttribute('normal',   new THREE.Float32BufferAttribute(grp.nor, 3));
+          geo.setAttribute('normal', makePackedNormalAttribute(grp.nor));
           geo.setIndex(grp.idx);
           geo.computeBoundingSphere();
           const mesh = new THREE.Mesh(geo, mat);

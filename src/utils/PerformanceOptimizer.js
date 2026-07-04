@@ -76,9 +76,9 @@ export class PerformanceOptimizer {
     r.shadowMap.autoUpdate  = false;
     r.shadowMap.needsUpdate = true; // compute first frame immediately
 
-    // Keep renderer.info alive across frames — lets PerformanceMonitor read
-    // accurate cumulative stats instead of per-frame-only data.
-    r.info.autoReset = false;
+    // Keep renderer.info per-frame so the live overlay reports the current
+    // render cost instead of ever-growing totals since page load.
+    r.info.autoReset = true;
 
     console.log(`[Perf] Renderer configured — DPR: ${r.getPixelRatio()}, shadowMap throttled, XR disabled`);
   }
